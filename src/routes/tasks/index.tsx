@@ -27,7 +27,7 @@ export function routeData() {
 
     const user = await db.query.users.findFirst({
       where(fields, operators) {
-        return operators.eq(fields.email, session.user!.email!);
+        return operators.eq(fields.email, email);
       },
     });
     if (!user) {

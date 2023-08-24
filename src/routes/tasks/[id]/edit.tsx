@@ -4,10 +4,10 @@ import { createServerAction$, createServerData$, redirect } from "solid-start/se
 import { getSession } from "@auth/solid-start";
 import { authOpts } from "../../api/auth/[...solidauth]";
 import { TaskFormSchema } from "../../../utils/form/schemas";
-import { task_priority, task_status, tasks, users_to_tasks } from "../../../db/schema";
+import { task_priority, task_status, tasks } from "../../../db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { Show, onMount } from "solid-js";
+import { Show } from "solid-js";
 import dayjs from "dayjs";
 
 // taks id page, solid js need routeData
@@ -28,7 +28,7 @@ export const routeData = ({ params }: RouteDataFuncArgs) => {
 
 export const Page = () => {
   const task = useRouteData<typeof routeData>();
-  const [{ pending, error }, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
+  const [{ pending }, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
     const session = await getSession(request, authOpts);
     if (!session) {
       throw new Error("Session not found");
@@ -60,7 +60,6 @@ export const Page = () => {
         throw new Error("Some error occured");
       }
     }
-    return redirect("/");
   });
   return (
     <Show when={!task.loading && task()}>

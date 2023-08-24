@@ -1,12 +1,9 @@
 import { RouteDataFuncArgs, useRouteData } from "solid-start";
 import { db } from "~/db";
-import { createServerData$, redirect } from "solid-start/server";
+import { createServerData$ } from "solid-start/server";
 import { Show } from "solid-js";
-import { A } from "@solidjs/router";
-import { PenLine, X } from "lucide-solid";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
-import { PriorityColors } from "~/utils/colors";
 import { Task } from "../../../components/Task";
 dayjs.extend(advancedFormat);
 

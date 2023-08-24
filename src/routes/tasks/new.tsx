@@ -1,4 +1,3 @@
-import { createRouteAction } from "solid-start";
 import { createServerAction$, redirect } from "solid-start/server";
 import Protected from "~/components/Protected";
 import { task_priority, task_status, tasks, users_to_tasks } from "../../db/schema";
@@ -8,7 +7,7 @@ import { authOpts } from "../api/auth/[...solidauth]";
 import { getSession } from "@auth/solid-start";
 
 export const { routeData, Page } = Protected((_) => {
-  const [{ pending, error }, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
+  const [{ pending }, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
     const session = await getSession(request, authOpts);
     if (!session) {
       throw new Error("Session not found");
@@ -37,7 +36,6 @@ export const { routeData, Page } = Protected((_) => {
         throw new Error("Some error occured");
       }
     }
-    return redirect("/");
   });
   return (
     <Form class="w-full flex flex-col gap-6 p-4">
