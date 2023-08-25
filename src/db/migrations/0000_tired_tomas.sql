@@ -11,7 +11,7 @@ EXCEPTION
 END $$;
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "task" (
-	"id" uuid PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"title" text NOT NULL,
 	"description" text NOT NULL,
 	"dueDate" timestamp NOT NULL,

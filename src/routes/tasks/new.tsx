@@ -6,7 +6,6 @@ import { z } from "zod";
 import Protected from "~/components/Protected";
 import { Select } from "~/components/Select";
 import { db } from "~/db";
-import { TipTap } from "../../components/TipTap";
 import { task_priority, task_status, tasks, users_to_tasks } from "../../db/schema";
 import { TaskPriority, TaskStatus } from "../../db/schema/task";
 import { TaskFormSchema } from "../../utils/form/schemas";
@@ -32,7 +31,6 @@ export const { routeData, Page } = Protected((_) => {
     const [task] = await db
       .insert(tasks)
       .values({
-        content: data.content,
         title: data.title,
         description: data.description,
         dueDate: data.dueDate,
@@ -105,7 +103,6 @@ export const { routeData, Page } = Protected((_) => {
         >
           Status
         </Select>
-        <TipTap content={{}} name="content" />
         <Show when={error()}>
           {(e) => (
             <>

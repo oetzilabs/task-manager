@@ -1,6 +1,5 @@
-import { type JSONContent } from "@tiptap/core";
 import { InferSelectModel, relations } from "drizzle-orm";
-import { jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users_to_tasks } from "./users_to_tasks";
 
 export const task_status = pgEnum("task_status", ["incomplete", "in progress", "complete", "archived", "on hold"]);
@@ -16,7 +15,6 @@ export const tasks = pgTable("task", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  content: jsonb("content").$type<JSONContent>().notNull(),
   dueDate: timestamp("dueDate", { mode: "date" }).notNull(),
   status: task_status("status").notNull(),
   priority: task_priority("priority").notNull(),

@@ -118,7 +118,7 @@ export const TaskList = () => {
             </Show>
             <div class={classNames("w-full gap-2", layoutCss[layout()])}>
               <Show when={ts().length > 0}>
-                <For each={ts()}>{(task) => <Task task={task} withDelete withEdit/>}</For>
+                <For each={ts()}>{(task) => <Task task={task} withDelete withEdit />}</For>
               </Show>
             </div>
           </>

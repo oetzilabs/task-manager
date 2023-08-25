@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "pg",
-  "id": "d749921c-6bd0-4182-b223-9bc247d33416",
+  "id": "dbb0ea95-7b9e-4010-beeb-b24aeef5e136",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "task": {
@@ -12,7 +12,8 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "title": {
           "name": "title",

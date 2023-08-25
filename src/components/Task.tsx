@@ -11,7 +11,7 @@ import { authOpts } from "../routes/api/auth/[...solidauth]";
 import { eq } from "drizzle-orm";
 import { Show } from "solid-js";
 import { Editor } from "./Editor";
-import { TipTap } from "./TipTap";
+// import { TipTap } from "./TipTap";
 dayjs.extend(advancedFormat);
 
 interface TaskProps {
@@ -51,7 +51,6 @@ export const Task = (props: TaskProps) => {
           dueDate: task.dueDate,
           priority: task.priority,
           status: task.status,
-          content: task.content,
         })
         .returning();
       if (!newTask) {
@@ -110,9 +109,9 @@ export const Task = (props: TaskProps) => {
           </div>
           <div class="text-xs text-neutral-400">{dayjs(props.task.dueDate).format("Do MMMM YYYY")}</div>
           <div class="text-sm">{props.task.description}</div>
-          <Show when={props.task.content && props.task.content}>
+          {/* <Show when={props.task.content && props.task.content}>
             {(c) => <TipTap content={c()} name="content" disabled={true} asHTML={true} />}
-          </Show>
+          </Show> */}
           <div class="flex flex-row gap-2 ">
             <button
               class="border flex gap-1 items-center bg-white text-black py-1 px-2 rounded-sm hover:bg-neutral-100"

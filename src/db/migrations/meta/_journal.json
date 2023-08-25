@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1692870833430,
-      "tag": "0000_luxuriant_maelstrom",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1692882123277,
-      "tag": "0001_blue_white_tiger",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1692984725327,
-      "tag": "0002_brainy_green_goblin",
+      "when": 1692992801355,
+      "tag": "0000_tired_tomas",
       "breakpoints": true
     }
   ]
