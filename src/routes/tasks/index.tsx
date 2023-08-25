@@ -5,11 +5,10 @@ import advancedFormat from "dayjs/plugin/advancedFormat";
 import { LayoutGrid, Plus, Rows } from "lucide-solid";
 import { For, JSX, Show, createSignal } from "solid-js";
 import { useRouteData } from "solid-start";
-import { createServerAction$, createServerData$ } from "solid-start/server";
+import { createServerData$ } from "solid-start/server";
 import { db } from "~/db";
 import { Task } from "../../components/Task";
 import { authOpts } from "../api/auth/[...solidauth]";
-import { users_to_tasks, tasks as _tasks } from "../../db/schema";
 dayjs.extend(advancedFormat);
 
 export function routeData() {
@@ -78,17 +77,19 @@ export const TaskList = () => {
           <h1 class="text-2xl font-bold">Tasks</h1>
         </div>
         <div class="flex flex-row gap-2 w-content">
-          <div class="border w-max outline-none cursor-pointer hover:bg-neutral-100 py-1 px-2 rounded-sm">
-            <div
-              class="flex gap-2 items-center"
-              onClick={() => {
-                setLayout(layout() === "grid" ? "list" : "grid");
-              }}
-            >
-              {layout() === "grid" ? layoutIcon.grid : layoutIcon.list}
-              {layout()}
+          <Show when={!tasks.loading && (tasks() ?? []).length > 0}>
+            <div class="border w-max outline-none cursor-pointer hover:bg-neutral-100 py-1 px-2 rounded-sm">
+              <div
+                class="flex gap-2 items-center"
+                onClick={() => {
+                  setLayout(layout() === "grid" ? "list" : "grid");
+                }}
+              >
+                {layout() === "grid" ? layoutIcon.grid : layoutIcon.list}
+                {layout()}
+              </div>
             </div>
-          </div>
+          </Show>
           <A href="/tasks/new">
             <button class="flex gap-1 items-center bg-black text-white py-1 px-2 rounded-sm hover:bg-neutral-900">
               <Plus size={16} />
@@ -97,28 +98,29 @@ export const TaskList = () => {
           </A>
         </div>
       </div>
-      <Show when={!tasks.loading && tasks.state === "ready" && tasks()}>
-        {(tss) => (
+      <Show when={tasks.loading}>
+        <div class="">Loading...</div>
+      </Show>
+      <Show when={tasks.error}>
+        <div class="text-red-500">Error: {tasks.error?.message ?? "Some error occured"}</div>
+      </Show>
+
+      <Show when={!tasks.error && tasks()}>
+        {(ts) => (
           <>
-            <Show when={tss().length > 0}>
-              <div class={classNames("w-full gap-2", layoutCss[layout()])}>
-                <div class="">Loading...</div>
-                <Show when={tasks.error}>
-                  <div class="text-red-500">Error: {tasks.error?.message ?? "Some error occured"}</div>
-                </Show>
-                <Show when={!tasks.error && tss()}>
-                  {(ts) => <For each={ts()}>{(task) => <Task task={task} />}</For>}
-                </Show>
-              </div>
-            </Show>
-            <Show when={tss().length === 0}>
-              <div class="border w-full p-10 flex flex-col items-center rounded-md">
-                <span class="text-neutral-500">No tasks found</span>
+            <Show when={ts().length === 0}>
+              <div class="border w-full p-14 flex flex-col items-center justify-center gap-4 bg-neutral-100">
+                <span class="text-neutral-500">No tasks have been found</span>
                 <A href="/tasks/new">
-                  <span class="text-blue-500 underline">Create a new task</span>
+                  <button class="text-white bg-black rounded-sm px-3 py-1">Create a new task</button>
                 </A>
               </div>
             </Show>
+            <div class={classNames("w-full gap-2", layoutCss[layout()])}>
+              <Show when={ts().length > 0}>
+                <For each={ts()}>{(task) => <Task task={task} />}</For>
+              </Show>
+            </div>
           </>
         )}
       </Show>

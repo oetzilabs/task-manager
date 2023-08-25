@@ -9,6 +9,8 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { Show } from "solid-js";
 import dayjs from "dayjs";
+import { TaskPriority, TaskStatus } from "../../../db/schema/task";
+import { Select } from "../../../components/Select";
 
 // taks id page, solid js need routeData
 export const routeData = ({ params }: RouteDataFuncArgs) => {
@@ -92,7 +94,7 @@ export const Page = () => {
               />
             </label>
             <label class="flex flex-col">
-              <span class="text-sm font-medium">Priority</span>
+              <span class="text-sm font-medium">Due Date</span>
               <input
                 name="dueDate"
                 type="date"
@@ -101,22 +103,22 @@ export const Page = () => {
                 value={dayjs(t().dueDate).format("YYYY-MM-DD")}
               />
             </label>
-            <label class="flex flex-col">
-              <span class="text-sm font-medium">Priority</span>
-              <select name="priority" class="bg-white py-2 outline-none" value={t().priority}>
-                {task_priority.enumValues.map((value) => (
-                  <option value={value}>{value}</option>
-                ))}
-              </select>
-            </label>
-            <label class="flex flex-col">
-              <span class="text-sm font-medium">Status</span>
-              <select name="status" class="bg-white py-2 outline-none" value={t().status}>
-                {task_status.enumValues.map((value) => (
-                  <option value={value}>{value}</option>
-                ))}
-              </select>
-            </label>
+            <Select<TaskPriority>
+              name="priority"
+              options={task_priority.enumValues}
+              placeholder="Select a priority…"
+              defaultValue={task_priority.enumValues[0]}
+            >
+              Priority
+            </Select>
+            <Select<TaskStatus>
+              name="status"
+              options={task_status.enumValues}
+              placeholder="Select a status"
+              defaultValue={task_status.enumValues[0]}
+            >
+              Status
+            </Select>
           </div>
           <div class="flex w-full justify-between gap-2">
             <div class="flex w-full"></div>

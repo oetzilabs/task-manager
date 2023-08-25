@@ -1,10 +1,14 @@
 import { createServerAction$, redirect } from "solid-start/server";
+import { Select } from "~/components/Select";
 import Protected from "~/components/Protected";
 import { task_priority, task_status, tasks, users_to_tasks } from "../../db/schema";
 import { TaskFormSchema } from "../../utils/form/schemas";
 import { db } from "../../db";
 import { authOpts } from "../api/auth/[...solidauth]";
 import { getSession } from "@auth/solid-start";
+import { A } from "@solidjs/router";
+import { Check } from "lucide-solid";
+import { TaskPriority, TaskStatus } from "../../db/schema/task";
 
 export const { routeData, Page } = Protected((_) => {
   const [{ pending }, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
@@ -52,29 +56,34 @@ export const { routeData, Page } = Protected((_) => {
           <input name="description" type="text" placeholder="Description" class="bg-white border-b py-2 outline-none" />
         </label>
         <label class="flex flex-col">
-          <span class="text-sm font-medium">Priority</span>
-          <input name="dueDate" type="date" placeholder="Due Date" class="bg-white py-2 outline-none" />
+          <span class="text-sm font-medium">Due Date</span>
+          <input name="dueDate" type="date" placeholder="Due Date" class="w-min bg-white py-2 outline-none" />
         </label>
-        <label class="flex flex-col">
-          <span class="text-sm font-medium">Priority</span>
-          <select name="priority" class="bg-white py-2 outline-none">
-            {task_priority.enumValues.map((value) => (
-              <option value={value}>{value}</option>
-            ))}
-          </select>
-        </label>
-        <label class="flex flex-col">
-          <span class="text-sm font-medium">Status</span>
-          <select name="status" class="bg-white py-2 outline-none" value={task_status.enumValues[0]}>
-            {task_status.enumValues.map((value) => (
-              <option value={value}>{value}</option>
-            ))}
-          </select>
-        </label>
+        <Select<TaskPriority>
+          name="priority"
+          options={task_priority.enumValues}
+          placeholder="Select a priority…"
+          defaultValue={task_priority.enumValues[0]}
+        >
+          Priority
+        </Select>
+        <Select<TaskStatus>
+          name="status"
+          options={task_status.enumValues}
+          placeholder="Select a status"
+          defaultValue={task_status.enumValues[0]}
+        >
+          Status
+        </Select>
       </div>
       <div class="flex w-full justify-between gap-2">
         <div class="flex w-full"></div>
-        <div>
+        <div class="flex flex-row gap-2">
+          <A href="/tasks">
+            <button type="button" class="border w-max bg-neutral-100 text-black py-1 px-4 rounded-sm">
+              Back
+            </button>
+          </A>
           <button disabled={pending} type="submit" class="w-max bg-black text-white py-1 px-4 rounded-sm">
             Create
           </button>
