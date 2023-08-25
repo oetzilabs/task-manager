@@ -5,50 +5,56 @@ import advancedFormat from "dayjs/plugin/advancedFormat";
 import { LayoutGrid, Plus, Rows } from "lucide-solid";
 import { For, JSX, Show, createSignal } from "solid-js";
 import { useRouteData } from "solid-start";
-import { createServerData$ } from "solid-start/server";
+import { createServerAction$, createServerData$ } from "solid-start/server";
 import { db } from "~/db";
 import { Task } from "../../components/Task";
 import { authOpts } from "../api/auth/[...solidauth]";
+import { users_to_tasks, tasks as _tasks } from "../../db/schema";
 dayjs.extend(advancedFormat);
 
 export function routeData() {
-  const tasks = createServerData$(async (_, { request }) => {
-    const session = await getSession(request, authOpts);
-    if (!session) {
-      return [];
-    }
-    if (!session.user) {
-      return [];
-    }
-    if (!session.user.email) {
-      return [];
-    }
-    const email = session.user.email;
+  const tasks = createServerData$(
+    async (_, { request }) => {
+      const session = await getSession(request, authOpts);
+      if (!session) {
+        return [];
+      }
+      if (!session.user) {
+        return [];
+      }
+      if (!session.user.email) {
+        return [];
+      }
+      const email = session.user.email;
 
-    const user = await db.query.users.findFirst({
-      where(fields, operators) {
-        return operators.eq(fields.email, email);
-      },
-    });
-    if (!user) {
-      return [];
+      const user = await db.query.users.findFirst({
+        where(fields, operators) {
+          return operators.eq(fields.email, email);
+        },
+      });
+      if (!user) {
+        return [];
+      }
+      const user_has_tasks = await db.query.users_to_tasks.findMany({
+        with: {
+          user: true,
+          task: true,
+        },
+        where(fields, operators) {
+          return operators.eq(fields.user_id, user.id);
+        },
+      });
+      return user_has_tasks.map((uht) => uht.task).filter((t) => t.status !== "archived");
+    },
+    {
+      key: () => ["tasks"],
     }
-    const user_has_tasks = await db.query.users_to_tasks.findMany({
-      with: {
-        user: true,
-        task: true,
-      },
-      where(fields, operators) {
-        return operators.eq(fields.user_id, user.id);
-      },
-    });
-    return user_has_tasks.map((uht) => uht.task);
-  });
+  );
 
   return tasks;
 }
 
-const classNames = (...classes: string[]) => classes.filter(Boolean).join(" ");
+const classNames = (...classes: (string | boolean)[]) => classes.filter(Boolean).join(" ");
 
 type Layout = "grid" | "list";
 
@@ -91,26 +97,31 @@ export const TaskList = () => {
           </A>
         </div>
       </div>
-      <div class={classNames("w-full gap-2", layoutCss[layout()])}>
-        <Show when={tasks.loading}>
-          <div class="">Loading...</div>
-        </Show>
-        <Show when={tasks.error}>
-          <div class="text-red-500">Error: {tasks.error?.message ?? "Some error occured"}</div>
-        </Show>
-        <Show when={!tasks.error && tasks()}>
-          {(ts) => (
-            <>
-              <Show when={ts().length === 0}>
-                <div class="">No tasks found</div>
-              </Show>
-              <Show when={ts().length > 0}>
-                <For each={ts()}>{(task) => <Task task={task} />}</For>
-              </Show>
-            </>
-          )}
-        </Show>
-      </div>
+      <Show when={!tasks.loading && tasks.state === "ready" && tasks()}>
+        {(tss) => (
+          <>
+            <Show when={tss().length > 0}>
+              <div class={classNames("w-full gap-2", layoutCss[layout()])}>
+                <div class="">Loading...</div>
+                <Show when={tasks.error}>
+                  <div class="text-red-500">Error: {tasks.error?.message ?? "Some error occured"}</div>
+                </Show>
+                <Show when={!tasks.error && tss()}>
+                  {(ts) => <For each={ts()}>{(task) => <Task task={task} />}</For>}
+                </Show>
+              </div>
+            </Show>
+            <Show when={tss().length === 0}>
+              <div class="border w-full p-10 flex flex-col items-center rounded-md">
+                <span class="text-neutral-500">No tasks found</span>
+                <A href="/tasks/new">
+                  <span class="text-blue-500 underline">Create a new task</span>
+                </A>
+              </div>
+            </Show>
+          </>
+        )}
+      </Show>
     </div>
   );
 };

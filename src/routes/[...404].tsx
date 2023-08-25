@@ -7,7 +7,7 @@ export default function NotFound() {
     <main>
       <Title>Not Found</Title>
       <HttpStatusCode code={404} />
-      <div class="flex flex-col gap-10 w-screen h-screen items-center justify-center">
+      <div class="flex flex-col gap-10 w-full h-[calc(100vh-56px)] items-center justify-center">
         <h1 class="text-7xl">Page Not Found</h1>
         <p class="text-3xl">
           Visit{" "}
