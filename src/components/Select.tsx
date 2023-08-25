@@ -8,6 +8,7 @@ type SelectProps<T> = JSX.HTMLAttributes<HTMLSelectElement> & {
   options: T[];
   defaultValue?: T;
   placeholder?: string;
+  disabled?: boolean;
   classes?: {
     root: string;
     label: string;
@@ -32,7 +33,7 @@ export const Select = <T extends string>(props: SelectProps<T>) => {
         <S.Item
           item={_props.item}
           class={classNames(
-            "flex flex-row gap-2 justify-between items-center w-full hover:bg-neutral-200 p-1 rounded-md",
+            "flex flex-row gap-2 justify-between items-center w-full hover:bg-neutral-200 py-1 px-2 rounded-sm cursor-pointer",
             props.classes?.item
           )}
         >
@@ -57,7 +58,9 @@ export const Select = <T extends string>(props: SelectProps<T>) => {
         </S.Icon>
       </S.Trigger>
       <S.Portal>
-        <S.Content class={classNames("w-full flex flex-col bg-neutral-100 p-1 rounded-md", props.classes?.content)}>
+        <S.Content
+          class={classNames("w-full flex flex-col bg-neutral-100 p-1 rounded-sm border", props.classes?.content)}
+        >
           <S.Listbox class={classNames("w-full flex flex-col", props.classes?.listbox)} />
         </S.Content>
       </S.Portal>

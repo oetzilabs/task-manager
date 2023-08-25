@@ -1,66 +1,84 @@
-import { createServerAction$, redirect } from "solid-start/server";
-import { Select } from "~/components/Select";
-import Protected from "~/components/Protected";
-import { task_priority, task_status, tasks, users_to_tasks } from "../../db/schema";
-import { TaskFormSchema } from "../../utils/form/schemas";
-import { db } from "../../db";
-import { authOpts } from "../api/auth/[...solidauth]";
 import { getSession } from "@auth/solid-start";
 import { A } from "@solidjs/router";
-import { Check } from "lucide-solid";
+import { For, Show, createSignal } from "solid-js";
+import { createServerAction$, redirect, ServerError } from "solid-start/server";
+import { z, ZodError } from "zod";
+import Protected from "~/components/Protected";
+import { Select } from "~/components/Select";
+import { db } from "~/db";
+import { task_priority, task_status, tasks, users_to_tasks } from "../../db/schema";
 import { TaskPriority, TaskStatus } from "../../db/schema/task";
+import { TaskFormSchema } from "../../utils/form/schemas";
+import { authOpts } from "../api/auth/[...solidauth]";
 
 export const { routeData, Page } = Protected((_) => {
-  const [{ pending }, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
+  const [error, setError] = createSignal<any>(null);
+  const [formState, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
     const session = await getSession(request, authOpts);
     if (!session) {
       throw new Error("Session not found");
     }
-    const data = Object.fromEntries(formData.entries());
-    const validated = TaskFormSchema.safeParse(data);
+    const data = TaskFormSchema.parse(Object.fromEntries(formData.entries()));
 
-    if (!validated.success) {
-      console.log(validated.error.formErrors);
-      throw new Error("Missing data");
+    const user = await db.query.users.findFirst({
+      where(fields, operators) {
+        return operators.eq(fields.email, session.user!.email!);
+      },
+    });
+    if (!user) {
+      throw new ServerError("User not found");
+    }
+    const [task] = await db.insert(tasks).values(data).returning();
+    await db.insert(users_to_tasks).values({ user_id: user.id, task_id: task.id }).returning();
+
+    if (task) {
+      return redirect(`/tasks/${task.id}`);
     } else {
-      const user = await db.query.users.findFirst({
-        where(fields, operators) {
-          return operators.eq(fields.email, session.user!.email!);
-        },
-      });
-      if (!user) {
-        throw new Error("User not found");
-      }
-      const [task] = await db.insert(tasks).values(validated.data).returning();
-      await db.insert(users_to_tasks).values({ user_id: user.id, task_id: task.id }).returning();
-
-      if (task) {
-        return redirect("/tasks");
-      } else {
-        throw new Error("Some error occured");
-      }
+      throw new ServerError("Some error occured");
     }
   });
+  let formRef: HTMLFormElement;
   return (
-    <Form class="w-full flex flex-col gap-6 p-4">
+    <Form class="w-full flex flex-col gap-6 p-4" ref={formRef!}>
       <div>
         <h1 class="text-4xl font-bold">New Task</h1>
       </div>
-      <div class="flex flex-col border p-2 gap-2">
+      <div class="flex flex-col border rounded-sm p-4 gap-4">
         <label class="flex flex-col ">
           <span class="text-sm font-medium">Title</span>
-          <input name="title" type="text" placeholder="Title" class="bg-white border-b py-2 outline-none" autofocus />
+          <input
+            name="title"
+            disabled={formState.pending}
+            type="text"
+            placeholder="Title"
+            class="bg-white border-b py-2 outline-none"
+            autofocus
+          />
+          <span class="text-xs text-neutral-500">Title of the task</span>
         </label>
         <label class="flex flex-col">
           <span class="text-sm font-medium">Description</span>
-          <input name="description" type="text" placeholder="Description" class="bg-white border-b py-2 outline-none" />
+          <input
+            disabled={formState.pending}
+            name="description"
+            type="text"
+            placeholder="Description"
+            class="bg-white border-b py-2 outline-none"
+          />
         </label>
         <label class="flex flex-col">
           <span class="text-sm font-medium">Due Date</span>
-          <input name="dueDate" type="date" placeholder="Due Date" class="w-min bg-white py-2 outline-none" />
+          <input
+            disabled={formState.pending}
+            name="dueDate"
+            type="date"
+            placeholder="Due Date"
+            class="w-min bg-white py-2 outline-none"
+          />
         </label>
         <Select<TaskPriority>
           name="priority"
+          disabled={formState.pending}
           options={task_priority.enumValues}
           placeholder="Select a priority…"
           defaultValue={task_priority.enumValues[0]}
@@ -70,11 +88,21 @@ export const { routeData, Page } = Protected((_) => {
         <Select<TaskStatus>
           name="status"
           options={task_status.enumValues}
+          disabled={formState.pending}
           placeholder="Select a status"
           defaultValue={task_status.enumValues[0]}
         >
           Status
         </Select>
+        <Show when={error()}>
+          {(e) => (
+            <>
+              <For each={Object.keys(e().flatten().fieldErrors) as (keyof z.infer<typeof TaskFormSchema>)[]}>
+                {(key) => <span class="text-xs text-red-500">{e().formErrors.fieldErrors[key]}</span>}
+              </For>
+            </>
+          )}
+        </Show>
       </div>
       <div class="flex w-full justify-between gap-2">
         <div class="flex w-full"></div>
@@ -84,7 +112,21 @@ export const { routeData, Page } = Protected((_) => {
               Back
             </button>
           </A>
-          <button disabled={pending} type="submit" class="w-max bg-black text-white py-1 px-4 rounded-sm">
+          <button
+            disabled={formState.pending}
+            type="button"
+            class="w-max bg-black text-white py-1 px-4 rounded-sm"
+            onClick={() => {
+              // first validate the form
+              const data = Object.fromEntries(new FormData(formRef).entries());
+              const validated = TaskFormSchema.safeParse(data);
+              if (!validated.success) {
+                setError(validated.error);
+              } else {
+                formRef?.submit();
+              }
+            }}
+          >
             Create
           </button>
         </div>

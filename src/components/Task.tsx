@@ -14,6 +14,8 @@ dayjs.extend(advancedFormat);
 
 interface TaskProps {
   task: TaskSelect;
+  withDelete?: boolean;
+  withEdit?: boolean;
 }
 
 export const Task = (props: TaskProps) => {
@@ -116,13 +118,15 @@ export const Task = (props: TaskProps) => {
               <CopyPlus size={16} />
               <span>Duplicate</span>
             </button>
-            <A href={`/tasks/${props.task.id}/edit`}>
-              <button class="flex gap-1 items-center bg-black text-white py-1 px-2 rounded-sm hover:bg-neutral-900">
-                <PenLine size={16} />
-                <span>Edit</span>
-              </button>
-            </A>
-            <Show when={props.task.status !== "archived"}>
+            <Show when={props.withEdit}>
+              <A href={`/tasks/${props.task.id}/edit`}>
+                <button class="flex gap-1 items-center bg-black text-white py-1 px-2 rounded-sm hover:bg-neutral-900">
+                  <PenLine size={16} />
+                  <span>Edit</span>
+                </button>
+              </A>
+            </Show>
+            <Show when={props.task.status !== "archived" && props.withDelete}>
               <button
                 class="flex gap-1 items-center bg-red-500 text-white py-1 px-2 rounded-sm hover:bg-red-600"
                 disabled={deletionState.pending}
