@@ -1,16 +1,17 @@
-import { RouteDataFuncArgs, useRouteData } from "solid-start";
-import { db } from "~/db";
-import { createServerAction$, createServerData$, redirect } from "solid-start/server";
 import { getSession } from "@auth/solid-start";
-import { authOpts } from "../../api/auth/[...solidauth]";
-import { TaskFormSchema, EditTaskFormSchema } from "../../../utils/form/schemas";
-import { task_priority, task_status, tasks } from "../../../db/schema";
-import { eq } from "drizzle-orm";
-import { z } from "zod";
-import { For, Show, createSignal } from "solid-js";
 import dayjs from "dayjs";
-import { TaskPriority, TaskStatus } from "../../../db/schema/task";
+import { eq } from "drizzle-orm";
+import { For, Show, createSignal } from "solid-js";
+import { RouteDataFuncArgs, useRouteData } from "solid-start";
+import { createServerAction$, createServerData$, redirect } from "solid-start/server";
+import { z } from "zod";
+import { db } from "~/db";
 import { Select } from "../../../components/Select";
+import { TipTap } from "../../../components/TipTap";
+import { task_priority, task_status, tasks } from "../../../db/schema";
+import { TaskPriority, TaskStatus } from "../../../db/schema/task";
+import { EditTaskFormSchema } from "../../../utils/form/schemas";
+import { authOpts } from "../../api/auth/[...solidauth]";
 
 // taks id page, solid js need routeData
 export const routeData = ({ params }: RouteDataFuncArgs) => {
@@ -117,6 +118,7 @@ export const Page = () => {
             >
               Status
             </Select>
+            <TipTap content={t().content ?? {}} name="content" disabled={false} />
             <Show when={error()}>
               {(e) => (
                 <>
