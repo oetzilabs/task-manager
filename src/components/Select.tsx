@@ -1,5 +1,6 @@
 import { Select as S } from "@kobalte/core";
-import { Check, ChevronDown } from "lucide-solid";
+import { Check } from "~/components/icons/check";
+import { ChevronDown } from "~/components/icons/chevron-down";
 import { JSX } from "solid-js";
 import { classNames } from "../utils/css";
 // take instric attr from the select component

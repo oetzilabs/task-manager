@@ -44,9 +44,6 @@ dependencies:
   drizzle-orm:
     specifier: ^0.28.5
     version: 0.28.5(@opentelemetry/api@1.4.1)(@types/pg@8.10.2)(pg@8.11.3)
-  lucide-solid:
-    specifier: ^0.268.0
-    version: 0.268.0(solid-js@1.7.11)
   pg:
     specifier: ^8.11.3
     version: 8.11.3
@@ -3307,14 +3304,6 @@ packages:
     dependencies:
       es5-ext: 0.10.62
     dev: true
-
-  /lucide-solid@0.268.0(solid-js@1.7.11):
-    resolution: {integrity: sha512-6eYkMDqrwz+1K+zhWqExrlwqRHFj+6zFSndOG1Qpcn1elr4qbQKrFirNUAWU501vqrDqDNIr9px1SN/I4AY9GQ==}
-    peerDependencies:
-      solid-js: ^1.4.7
-    dependencies:
-      solid-js: 1.7.11
-    dev: false
 
   /magic-string@0.27.0:
     resolution: {integrity: sha512-8UnnX2PeRAPZuN12svgR9j7M1uWMovg/CEnIwIG0LFkXSJJe4PdfUGiTGl8V9bsBHFUtfVINcSyYxd7q+kx9fA==}

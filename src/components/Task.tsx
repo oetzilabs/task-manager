@@ -1,17 +1,17 @@
+import { getSession } from "@auth/solid-start";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
-import { CopyPlus, PenLine, Trash, X } from "lucide-solid";
+import { eq } from "drizzle-orm";
+import { CopyPlus } from "~/components/icons/copy-plus";
+import { PenLine } from "~/components/icons/penline";
+import { Trash } from "~/components/icons/trash";
+import { Show } from "solid-js";
 import { A } from "solid-start";
-import { TaskSelect, users_to_tasks, tasks } from "../db/schema";
-import { PriorityColors } from "../utils/colors";
-import { getSession } from "@auth/solid-start";
 import { createServerAction$ } from "solid-start/server";
 import { db } from "../db";
+import { TaskSelect, tasks, users_to_tasks } from "../db/schema";
 import { authOpts } from "../routes/api/auth/[...solidauth]";
-import { eq } from "drizzle-orm";
-import { Show } from "solid-js";
-import { Editor } from "./Editor";
-// import { TipTap } from "./TipTap";
+import { PriorityColors } from "~/utils/colors";
 dayjs.extend(advancedFormat);
 
 interface TaskProps {

@@ -6,7 +6,4 @@ export default defineConfig({
   ssr: {
     noExternal: ["@kobalte/core"],
   },
-  optimizeDeps: {
-    exclude: ["lucide-solid"],
-  },
 });
