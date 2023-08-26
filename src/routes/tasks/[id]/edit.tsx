@@ -48,7 +48,8 @@ export const Page = () => {
     if (!user) {
       throw new Error("User not found");
     }
-    const [task] = await db.update(tasks).set(data).where(eq(tasks.id, data.id)).returning();
+    const newData = Object.assign(data, { updatedAt: new Date() });
+    const [task] = await db.update(tasks).set(newData).where(eq(tasks.id, data.id)).returning();
 
     if (task) {
       return redirect(`/tasks/${task.id}`);

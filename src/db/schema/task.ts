@@ -16,6 +16,9 @@ export const tasks = pgTable("task", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   dueDate: timestamp("dueDate", { mode: "date" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { mode: "date" }),
+  removedAt: timestamp("removed_at", { mode: "date" }),
   status: task_status("status").notNull(),
   priority: task_priority("priority").notNull(),
 });

@@ -89,7 +89,8 @@ export const Task = (props: TaskProps) => {
       const [t] = await db
         .update(tasks)
         .set({
-          status: "archived",
+          updatedAt: new Date(),
+          removedAt: new Date(),
         })
         .where(eq(tasks.id, task.id))
         .returning();
@@ -128,7 +129,7 @@ export const Task = (props: TaskProps) => {
                 </Button.Primary>
               </A>
             </Show>
-            <Show when={props.task.status !== "archived" && props.withDelete}>
+            <Show when={props.task.removedAt === null && props.withDelete}>
               <Button.Destructive
                 disabled={deletionState.pending}
                 onClick={() => {

@@ -7,7 +7,7 @@ import { Provider } from "~/utils/keybinds";
 
 export default function Root() {
   return (
-    <Html lang="en">
+    <Html lang="en" class="dark">
       <Head>
         <Title>TaskManager</Title>
         <Meta charset="utf-8" />

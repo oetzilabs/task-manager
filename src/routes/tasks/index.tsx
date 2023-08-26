@@ -46,7 +46,7 @@ export function routeData() {
           return operators.eq(fields.user_id, user.id);
         },
       });
-      return user_has_tasks.map((uht) => uht.task).filter((t) => t.status !== "archived");
+      return user_has_tasks.map((uht) => uht.task).filter((t) => t.removedAt === null);
     },
     {
       key: () => ["tasks"],

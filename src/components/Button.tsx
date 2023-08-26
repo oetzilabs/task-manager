@@ -8,7 +8,7 @@ const DefaultButton = (props: ButtonProps) => {
     <button
       {...props}
       class={classNames(
-        "px-3 py-1.5 flex gap-1 items-center rounded-sm border border-black/[0.07] dark:border-white/[0.07]",
+        "px-3 py-1 flex gap-1 items-center rounded-sm border border-black/[0.07] dark:border-white/[0.07]",
         props.class
       )}
     >

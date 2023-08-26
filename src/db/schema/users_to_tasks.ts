@@ -1,4 +1,4 @@
-import { pgTable, primaryKey, uuid, text } from "drizzle-orm/pg-core";
+import { pgTable, primaryKey, uuid, text, timestamp } from "drizzle-orm/pg-core";
 import { users } from "./user";
 import { tasks } from "./task";
 import { relations } from "drizzle-orm";
@@ -12,6 +12,8 @@ export const users_to_tasks = pgTable(
     task_id: uuid("task_id")
       .notNull()
       .references(() => tasks.id),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull().defaultNow(),
+    removedAt: timestamp("removed_at", { mode: "date" }),
   },
   (t) => ({
     pk: primaryKey(t.user_id, t.task_id),
