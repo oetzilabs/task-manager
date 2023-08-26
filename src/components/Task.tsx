@@ -2,16 +2,17 @@ import { getSession } from "@auth/solid-start";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import { eq } from "drizzle-orm";
-import { CopyPlus } from "~/components/icons/copy-plus";
-import { PenLine } from "~/components/icons/penline";
-import { Trash } from "~/components/icons/trash";
 import { Show } from "solid-js";
 import { A } from "solid-start";
 import { createServerAction$ } from "solid-start/server";
+import { CopyPlus } from "~/components/icons/copy-plus";
+import { PenLine } from "~/components/icons/penline";
+import { Trash } from "~/components/icons/trash";
+import { PriorityColors } from "~/utils/colors";
 import { db } from "../db";
 import { TaskSelect, tasks, users_to_tasks } from "../db/schema";
 import { authOpts } from "../routes/api/auth/[...solidauth]";
-import { PriorityColors } from "~/utils/colors";
+import { Button } from "./Button";
 dayjs.extend(advancedFormat);
 
 interface TaskProps {
@@ -99,22 +100,18 @@ export const Task = (props: TaskProps) => {
     }
   );
   return (
-    <div class="w-full p-4 border rounded-sm">
+    <div class="w-full p-4 border border-neutral-200 bg-neutral-50 rounded-sm dark:border-neutral-900 dark:bg-neutral-950">
       <div class="w-full flex flex-row justify-between">
         <div class="flex-1 flex flex-col gap-2">
-          <div class="flex flex-row gap-1">
+          <div class="flex flex-row gap-1 dark:text-white">
             <A href={`/tasks/${props.task.id}`}>
               <h2 class="text-xl font-bold hover:underline underline-offset-2">{props.task.title}</h2>
             </A>
           </div>
           <div class="text-xs text-neutral-400">{dayjs(props.task.dueDate).format("Do MMMM YYYY")}</div>
           <div class="text-sm">{props.task.description}</div>
-          {/* <Show when={props.task.content && props.task.content}>
-            {(c) => <TipTap content={c()} name="content" disabled={true} asHTML={true} />}
-          </Show> */}
           <div class="flex flex-row gap-2 ">
-            <button
-              class="border flex gap-1 items-center bg-white text-black py-1 px-2 rounded-sm hover:bg-neutral-100"
+            <Button.Secondary
               disabled={duplicationState.pending}
               onClick={() => {
                 duplicateTask(props.task.id);
@@ -122,18 +119,17 @@ export const Task = (props: TaskProps) => {
             >
               <CopyPlus size={16} />
               <span>Duplicate</span>
-            </button>
+            </Button.Secondary>
             <Show when={props.withEdit}>
               <A href={`/tasks/${props.task.id}/edit`}>
-                <button class="flex gap-1 items-center bg-black text-white py-1 px-2 rounded-sm hover:bg-neutral-900">
+                <Button.Primary>
                   <PenLine size={16} />
                   <span>Edit</span>
-                </button>
+                </Button.Primary>
               </A>
             </Show>
             <Show when={props.task.status !== "archived" && props.withDelete}>
-              <button
-                class="flex gap-1 items-center bg-red-500 text-white py-1 px-2 rounded-sm hover:bg-red-600"
+              <Button.Destructive
                 disabled={deletionState.pending}
                 onClick={() => {
                   deleteTask(props.task.id);
@@ -141,7 +137,7 @@ export const Task = (props: TaskProps) => {
               >
                 <Trash size={16} />
                 <span>Delete</span>
-              </button>
+              </Button.Destructive>
             </Show>
           </div>
         </div>

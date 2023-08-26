@@ -2,13 +2,14 @@ import { getSession } from "@auth/solid-start";
 import { A } from "@solidjs/router";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
-import { LayoutGrid } from "~/components/icons/layout-grid";
-import { Plus } from "~/components/icons/plus";
-import { Rows } from "~/components/icons/rows";
 import { For, JSX, Show, createSignal } from "solid-js";
 import { useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
+import { LayoutGrid } from "~/components/icons/layout-grid";
+import { Plus } from "~/components/icons/plus";
+import { Rows } from "~/components/icons/rows";
 import { db } from "~/db";
+import { Button } from "../../components/Button";
 import { Task } from "../../components/Task";
 import { authOpts } from "../api/auth/[...solidauth]";
 dayjs.extend(advancedFormat);
@@ -74,15 +75,15 @@ export const TaskList = () => {
   const [layout, setLayout] = createSignal<Layout>("grid");
   return (
     <div class="w-full flex flex-col gap-2 py-4">
-      <div class="w-full flex flex-row justify-between border-b pb-2">
+      <div class="w-full flex flex-row justify-between border-b dark:border-b-neutral-900 pb-2 text-black dark:text-white">
         <div class="flex flex-1 gap-2">
           <h1 class="text-2xl font-bold">Tasks</h1>
         </div>
         <div class="flex flex-row gap-2 w-content">
           <Show when={!tasks.loading && (tasks() ?? []).length > 0}>
-            <div class="border w-max outline-none cursor-pointer hover:bg-neutral-100 py-1 px-2 rounded-sm">
+            <Button.Secondary class="border dark:border-neutral-900 w-max outline-none cursor-pointer hover:bg-neutral-100 py-1 px-2 rounded-sm">
               <div
-                class="flex gap-2 items-center"
+                class="flex flex-row gap-2 justify-between items-center"
                 onClick={() => {
                   setLayout(layout() === "grid" ? "list" : "grid");
                 }}
@@ -90,13 +91,13 @@ export const TaskList = () => {
                 {layout() === "grid" ? layoutIcon.grid : layoutIcon.list}
                 {layout()}
               </div>
-            </div>
+            </Button.Secondary>
           </Show>
           <A href="/tasks/new">
-            <button class="flex gap-1 items-center bg-black text-white py-1 px-2 rounded-sm hover:bg-neutral-900">
+            <Button.Primary>
               <Plus size={16} />
-              <span class="text-white">New Task</span>
-            </button>
+              <span>New Task</span>
+            </Button.Primary>
           </A>
         </div>
       </div>
@@ -106,15 +107,14 @@ export const TaskList = () => {
       <Show when={tasks.error}>
         <div class="text-red-500">Error: {tasks.error?.message ?? "Some error occured"}</div>
       </Show>
-
       <Show when={!tasks.error && tasks()}>
         {(ts) => (
           <>
             <Show when={ts().length === 0}>
-              <div class="border w-full p-14 flex flex-col items-center justify-center gap-4 bg-neutral-100">
+              <div class="border dark:border-neutral-900 w-full p-14 flex flex-col items-center justify-center gap-4 bg-neutral-100 dark:bg-neutral-950 rounded-sm">
                 <span class="text-neutral-500">No tasks have been found</span>
                 <A href="/tasks/new">
-                  <button class="text-white bg-black rounded-sm px-3 py-1">Create a new task</button>
+                  <Button.Primary>Create a new task</Button.Primary>
                 </A>
               </div>
             </Show>

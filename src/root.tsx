@@ -1,8 +1,9 @@
 // @refresh reload
 import { Suspense } from "solid-js";
 import { Body, ErrorBoundary, FileRoutes, Head, Html, Meta, Routes, Scripts, Title } from "solid-start";
-import { Header } from "./components/Header";
-import "./root.css";
+import { Header } from "~/components/Header";
+import "~/root.css";
+import { Provider } from "~/utils/keybinds";
 
 export default function Root() {
   return (
@@ -12,7 +13,7 @@ export default function Root() {
         <Meta charset="utf-8" />
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <Body class="flex flex-col relative w-screen min-h-screen h-auto">
+      <Body class="flex flex-col relative w-screen min-h-screen h-auto dark:bg-black">
         <Suspense>
           <ErrorBoundary
             fallback={(e, reset) => (
@@ -22,12 +23,14 @@ export default function Root() {
               </div>
             )}
           >
-            <Header />
-            <div class="pt-14 container mx-auto">
-              <Routes>
-                <FileRoutes />
-              </Routes>
-            </div>
+            <Provider>
+              <Header />
+              <div class="pt-14 container mx-auto">
+                <Routes>
+                  <FileRoutes />
+                </Routes>
+              </div>
+            </Provider>
           </ErrorBoundary>
         </Suspense>
         <Scripts />

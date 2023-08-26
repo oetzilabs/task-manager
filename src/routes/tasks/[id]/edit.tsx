@@ -10,7 +10,9 @@ import { db } from "~/db";
 import { task_priority, task_status, tasks } from "~/db/schema";
 import { TaskPriority, TaskStatus } from "~/db/schema/task";
 import { EditTaskFormSchema } from "~/utils/form/schemas";
+import { Input } from "../../../components/Input";
 import { authOpts } from "../../api/auth/[...solidauth]";
+import { Button } from "../../../components/Button";
 
 // taks id page, solid js need routeData
 export const routeData = ({ params }: RouteDataFuncArgs) => {
@@ -59,43 +61,40 @@ export const Page = () => {
   return (
     <Show when={!task.loading && task()}>
       {(t) => (
-        <Form class="w-full flex flex-col gap-6 p-4" ref={formRef!}>
+        <Form class="w-full flex flex-col gap-4 p-4 text-black dark:text-white" ref={formRef!}>
           <input type="hidden" name="id" value={t().id} />
           <div>
             <h1 class="text-4xl font-bold">Edit Task</h1>
           </div>
-          <div class="flex flex-col border p-2 gap-2">
-            <label class="flex flex-col ">
+          <div class="flex flex-col border dark:border-neutral-900 p-2 gap-2">
+            <label class="flex flex-col gap-0.5">
               <span class="text-sm font-medium">Title</span>
-              <input
+              <Input
                 name="title"
                 disabled={formState.pending}
                 type="text"
                 placeholder="Title"
-                class="bg-white border-b py-2 outline-none"
                 autofocus
                 value={t().title}
               />
             </label>
-            <label class="flex flex-col">
+            <label class="flex flex-col gap-0.5">
               <span class="text-sm font-medium">Description</span>
-              <input
-                name="description"
+              <Input
                 disabled={formState.pending}
+                name="description"
                 type="text"
                 placeholder="Description"
-                class="bg-white border-b py-2 outline-none"
                 value={t().description}
               />
             </label>
-            <label class="flex flex-col">
+            <label class="flex flex-col gap-0.5">
               <span class="text-sm font-medium">Due Date</span>
-              <input
-                name="dueDate"
+              <Input
                 disabled={formState.pending}
+                name="dueDate"
                 type="date"
                 placeholder="Due Date"
-                class="bg-white py-2 outline-none"
                 value={dayjs(t().dueDate).format("YYYY-MM-DD")}
               />
             </label>
@@ -130,12 +129,11 @@ export const Page = () => {
           <div class="flex w-full justify-between gap-2">
             <div class="flex w-full"></div>
             <div>
-              <button
+              <Button.Primary
                 disabled={formState.pending}
                 type="button"
                 class="w-max bg-black text-white py-1 px-4 rounded-sm"
                 onClick={() => {
-                  // first validate the form
                   const data = Object.fromEntries(new FormData(formRef).entries());
                   const validated = EditTaskFormSchema.safeParse(data);
                   if (!validated.success) {
@@ -146,7 +144,7 @@ export const Page = () => {
                 }}
               >
                 Save
-              </button>
+              </Button.Primary>
             </div>
           </div>
         </Form>

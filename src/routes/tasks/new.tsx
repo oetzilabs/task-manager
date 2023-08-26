@@ -6,6 +6,8 @@ import { z } from "zod";
 import Protected from "~/components/Protected";
 import { Select } from "~/components/Select";
 import { db } from "~/db";
+import { Button } from "../../components/Button";
+import { Input } from "../../components/Input";
 import { task_priority, task_status, tasks, users_to_tasks } from "../../db/schema";
 import { TaskPriority, TaskStatus } from "../../db/schema/task";
 import { TaskFormSchema } from "../../utils/form/schemas";
@@ -48,42 +50,22 @@ export const { routeData, Page } = Protected((_) => {
   });
   let formRef: HTMLFormElement;
   return (
-    <Form class="w-full flex flex-col gap-6 p-4" ref={formRef!}>
+    <Form class="w-full flex flex-col gap-4 p-4 text-black dark:text-white" ref={formRef!}>
       <div>
         <h1 class="text-4xl font-bold">New Task</h1>
       </div>
-      <div class="flex flex-col border rounded-sm p-4 gap-4">
-        <label class="flex flex-col ">
+      <div class="flex flex-col border dark:border-neutral-900 rounded-sm p-4 gap-4">
+        <label class="flex flex-col gap-0.5">
           <span class="text-sm font-medium">Title</span>
-          <input
-            name="title"
-            disabled={formState.pending}
-            type="text"
-            placeholder="Title"
-            class="bg-white border-b py-2 outline-none"
-            autofocus
-          />
-          <span class="text-xs text-neutral-500">Title of the task</span>
+          <Input name="title" disabled={formState.pending} type="text" placeholder="Title" autofocus />
         </label>
-        <label class="flex flex-col">
+        <label class="flex flex-col gap-0.5">
           <span class="text-sm font-medium">Description</span>
-          <input
-            disabled={formState.pending}
-            name="description"
-            type="text"
-            placeholder="Description"
-            class="bg-white border-b py-2 outline-none"
-          />
+          <Input disabled={formState.pending} name="description" type="text" placeholder="Description" />
         </label>
-        <label class="flex flex-col">
+        <label class="flex flex-col gap-0.5">
           <span class="text-sm font-medium">Due Date</span>
-          <input
-            disabled={formState.pending}
-            name="dueDate"
-            type="date"
-            placeholder="Due Date"
-            class="w-min bg-white py-2 outline-none"
-          />
+          <Input disabled={formState.pending} name="dueDate" type="date" placeholder="Due Date" />
         </label>
         <Select<TaskPriority>
           name="priority"
@@ -117,16 +99,12 @@ export const { routeData, Page } = Protected((_) => {
         <div class="flex w-full"></div>
         <div class="flex flex-row gap-2">
           <A href="/tasks">
-            <button type="button" class="border w-max bg-neutral-100 text-black py-1 px-4 rounded-sm">
-              Back
-            </button>
+            <Button.Secondary type="button">Back</Button.Secondary>
           </A>
-          <button
+          <Button.Primary
             disabled={formState.pending}
             type="button"
-            class="w-max bg-black text-white py-1 px-4 rounded-sm"
             onClick={() => {
-              // first validate the form
               const data = Object.fromEntries(new FormData(formRef).entries());
               const validated = TaskFormSchema.safeParse(data);
               if (!validated.success) {
@@ -137,7 +115,7 @@ export const { routeData, Page } = Protected((_) => {
             }}
           >
             Create
-          </button>
+          </Button.Primary>
         </div>
       </div>
     </Form>

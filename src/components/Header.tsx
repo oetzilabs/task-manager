@@ -1,13 +1,47 @@
-import { Show } from "solid-js";
+import { Show, createSignal, onMount } from "solid-js";
 import { A } from "solid-start";
 import { login, logout, useSession } from "../utils/auth";
+import { addKeybind } from "../utils/keybinds";
+import { Button } from "./Button";
 
 export const Header = () => {
-  const { loading, state, latest, error } = useSession();
+  const { loading, state, latest } = useSession();
+  const [theme, setTheme] = createSignal<"light" | "dark" | undefined>();
+
+  onMount(() => {
+    const t = localStorage.getItem("theme");
+    if (t === "dark") {
+      setTheme("dark");
+      document.documentElement.classList.add("dark");
+    } else {
+      setTheme("light");
+      document.documentElement.classList.remove("dark");
+    }
+    addKeybind(
+      "j",
+      () => {
+        toggleTheme();
+      },
+      ["ctrlKey"],
+      true
+    );
+  });
+
+  const toggleTheme = () => {
+    if (theme() === "dark") {
+      setTheme("light");
+      localStorage.setItem("theme", "light");
+      document.documentElement.classList.remove("dark");
+    } else {
+      setTheme("dark");
+      localStorage.setItem("theme", "dark");
+      document.documentElement.classList.add("dark");
+    }
+  };
 
   return (
-    <div class="fixed bg-white z-50 top-0 left-0 right-0 flex gap-4 items-center h-14 border-b justify-between">
-      <div class="flex gap-4 pl-4">
+    <div class="fixed bg-white dark:bg-black z-50 top-0 left-0 right-0 flex gap-4 items-center h-14 border-b dark:border-b-neutral-900 justify-between">
+      <div class="flex gap-4 pl-4 dark:text-white">
         <A href="/">Home</A>
         <Show when={!loading && state === "ready" && latest}>
           {(state) => (
@@ -18,31 +52,16 @@ export const Header = () => {
         </Show>
       </div>
       <div class="flex gap-4 p-2">
-        <Show when={!loading && state === "errored" && error}>
-          {(e) => (
-            <button class="flex justify-between items-center bg-red-100 p-2" onClick={login}>
-              {e().message}
-            </button>
-          )}
-        </Show>
+        <Button.Secondary onClick={toggleTheme}>Toggle Theme</Button.Secondary>
         <Show
           when={!loading && state === "ready" && latest}
-          fallback={
-            <button class="flex justify-between items-center bg-black text-white py-1 px-4 rounded-sm" onClick={login}>
-              Login
-            </button>
-          }
+          fallback={<Button.Primary onClick={login}>Login</Button.Primary>}
         >
           {(state) => (
-            <div class="flex justify-between items-center gap-2">
+            <div class="flex justify-between items-center gap-2 text-black dark:text-white">
               <img class="h-8 w-8 rounded-full" src={state().user?.image ?? ""} alt={state().user?.name ?? "User"} />
               {state().user?.name}
-              <button
-                class="flex justify-between items-center bg-black text-white py-1 px-4 rounded-sm"
-                onClick={logout}
-              >
-                Logout
-              </button>
+              <Button.Primary onClick={logout}>Logout</Button.Primary>
             </div>
           )}
         </Show>
