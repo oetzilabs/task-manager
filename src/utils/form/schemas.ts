@@ -1,7 +1,18 @@
-import { OutputData } from "@editorjs/editorjs";
 import dayjs from "dayjs";
 import { z } from "zod";
-import { task_priority, task_status } from "~/db/schema";
+import { requirement_priority, requirement_status, task_priority, task_status } from "~/db/schema";
+
+export const TaskRequirementFormSchema = z.object({
+  title: z.string(),
+  description: z.string(),
+  dueDate: z
+    .string()
+    .or(z.date())
+    .transform((value) => new Date(value))
+    .refine((value) => dayjs(value).diff(dayjs(), "day") >= 0, "Due date must be today or later"),
+  status: z.enum(requirement_status.enumValues),
+  priority: z.enum(requirement_priority.enumValues),
+});
 
 export const TaskFormSchema = z.object({
   title: z.string().min(1, "Title must be at least 1 character long"),
@@ -9,20 +20,14 @@ export const TaskFormSchema = z.object({
   dueDate: z
     .string()
     .or(z.date())
-    .transform((value) => new Date(value))
+    .transform((value) => dayjs(value).toDate())
     .refine((value) => dayjs(value).diff(dayjs(), "day") >= 0, "Due date must be today or later"),
-  // content: z.any().transform((value) => {
-  //   try {
-  //     return JSON.parse(value) as OutputData;
-  //   } catch (e) {
-  //     return {} as OutputData;
-  //   }
-  // }),
   priority: z.enum(task_priority.enumValues),
   status: z.enum(task_status.enumValues),
 });
-export const EditTaskFormSchema = TaskFormSchema.merge(
-  z.object({
+
+export const EditTaskFormSchema = z
+  .object({
     id: z.string().uuid(),
   })
-);
+  .merge(TaskFormSchema);

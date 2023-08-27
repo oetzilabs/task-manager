@@ -13,6 +13,7 @@ import { db } from "../db";
 import { TaskSelect, tasks, users_to_tasks } from "../db/schema";
 import { authOpts } from "../routes/api/auth/[...solidauth]";
 import { Button } from "./Button";
+import { Calendar } from "./icons/calendar";
 dayjs.extend(advancedFormat);
 
 interface TaskProps {
@@ -102,64 +103,78 @@ export const Task = (props: TaskProps) => {
   );
   return (
     <div class="w-full p-4 border border-neutral-200 bg-neutral-50 rounded-sm dark:border-neutral-900 dark:bg-neutral-950">
-      <div class="w-full flex flex-row justify-between">
-        <div class="flex-1 flex flex-col gap-2">
+      <div class="w-full flex flex-col">
+        <div class="w-full flex flex-col gap-2">
+          <div class="w-full flex flex-row gap-2 justify-between">
+            <div class="flex flex-1 flex-row gap-2 items-center">
+              <div class="relative w-max flex flex-col gap-2">
+                <div class="flex flex-row gap-2 items-center">
+                  <div class="flex flex-row gap-1 items-center select-none">
+                    <div class="text-xs text-neutral-400">
+                      <Calendar size={14} />
+                    </div>
+                    <div class="text-xs text-neutral-400">Due</div>
+                    <div class="text-xs text-neutral-400">{dayjs(props.task.dueDate).format("Do MMMM YYYY")}</div>
+                  </div>
+                </div>
+                <div class="w-max flex flex-row gap-2 items-center select-none">
+                  <div
+                    class="w-3 h-3 rounded-full"
+                    style={{
+                      ["background-color"]: PriorityColors[props.task.priority],
+                    }}
+                  />
+                  <div
+                    class="text-sm"
+                    style={{
+                      color: PriorityColors[props.task.priority],
+                    }}
+                  >
+                    {props.task.priority}
+                  </div>
+                  <div class="text-xs text-neutral-400">{props.task.status}</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-row gap-1 h-min">
+              <Button.Tertiary
+                disabled={duplicationState.pending}
+                onClick={() => {
+                  duplicateTask(props.task.id);
+                }}
+                class="border-none !p-2"
+              >
+                <CopyPlus size={16} />
+                <span class="sr-only">Duplicate</span>
+              </Button.Tertiary>
+              <Show when={props.withEdit}>
+                <A href={`/tasks/${props.task.id}/edit`}>
+                  <Button.Tertiary class="border-none !p-2">
+                    <PenLine size={16} />
+                    <span class="sr-only">Edit</span>
+                  </Button.Tertiary>
+                </A>
+              </Show>
+              <Show when={props.task.removedAt === null && props.withDelete}>
+                <Button.Tertiary
+                  disabled={deletionState.pending}
+                  onClick={() => {
+                    deleteTask(props.task.id);
+                  }}
+                  class="border-none !p-2 !text-red-500 hover:!text-red-600 hover:!bg-red-100 dark:hover:!bg-red-900 dark:hover:!text-white"
+                >
+                  <Trash size={16} />
+                  <span class="sr-only">Delete</span>
+                </Button.Tertiary>
+              </Show>
+            </div>
+          </div>
           <div class="flex flex-row gap-1 dark:text-white">
             <A href={`/tasks/${props.task.id}`}>
               <h2 class="text-xl font-bold hover:underline underline-offset-2">{props.task.title}</h2>
             </A>
           </div>
-          <div class="text-xs text-neutral-400">{dayjs(props.task.dueDate).format("Do MMMM YYYY")}</div>
           <div class="text-sm">{props.task.description}</div>
-          <div class="flex flex-row gap-2 ">
-            <Button.Secondary
-              disabled={duplicationState.pending}
-              onClick={() => {
-                duplicateTask(props.task.id);
-              }}
-            >
-              <CopyPlus size={16} />
-              <span>Duplicate</span>
-            </Button.Secondary>
-            <Show when={props.withEdit}>
-              <A href={`/tasks/${props.task.id}/edit`}>
-                <Button.Primary>
-                  <PenLine size={16} />
-                  <span>Edit</span>
-                </Button.Primary>
-              </A>
-            </Show>
-            <Show when={props.task.removedAt === null && props.withDelete}>
-              <Button.Destructive
-                disabled={deletionState.pending}
-                onClick={() => {
-                  deleteTask(props.task.id);
-                }}
-              >
-                <Trash size={16} />
-                <span>Delete</span>
-              </Button.Destructive>
-            </Show>
-          </div>
-        </div>
-        <div class="relative w-max flex flex-col gap-2 items-end">
-          <div class="flex flex-row gap-2 items-center">
-            <div
-              class="w-3 h-3 rounded-full"
-              style={{
-                ["background-color"]: PriorityColors[props.task.priority],
-              }}
-            />
-            <div
-              class="text-sm"
-              style={{
-                color: PriorityColors[props.task.priority],
-              }}
-            >
-              {props.task.priority}
-            </div>
-          </div>
-          <div class="text-xs text-neutral-400">{props.task.status}</div>
         </div>
       </div>
     </div>

@@ -3,6 +3,8 @@ import { A } from "solid-start";
 import { login, logout, useSession } from "../utils/auth";
 import { addKeybind } from "../utils/keybinds";
 import { Button } from "./Button";
+import { Moon } from "./icons/moon";
+import { Sun } from "./icons/sun";
 
 export const Header = () => {
   const { loading, state, latest } = useSession();
@@ -43,16 +45,14 @@ export const Header = () => {
     <div class="fixed bg-white dark:bg-black z-50 top-0 left-0 right-0 flex gap-4 items-center h-14 border-b dark:border-b-neutral-900 justify-between">
       <div class="flex gap-4 pl-4 dark:text-white">
         <A href="/">Home</A>
-        <Show when={!loading && state === "ready" && latest}>
-          {(state) => (
-            <>
-              <A href="/tasks">Tasks</A>
-            </>
-          )}
+        <Show when={!loading && state === "ready" && latest !== null}>
+          <A href="/tasks">Tasks</A>
         </Show>
       </div>
       <div class="flex gap-4 p-2">
-        <Button.Secondary onClick={toggleTheme}>Toggle Theme</Button.Secondary>
+        <Button.Secondary onClick={toggleTheme}>
+          <div>{theme() === "dark" ? <Sun size={16} /> : <Moon size={16} />}</div>
+        </Button.Secondary>
         <Show
           when={!loading && state === "ready" && latest}
           fallback={<Button.Primary onClick={login}>Login</Button.Primary>}

@@ -15,6 +15,12 @@ import { authOpts } from "../api/auth/[...solidauth]";
 
 export const { routeData, Page } = Protected((_) => {
   const [error, setError] = createSignal<any>(null);
+  const getError = (name: keyof typeof TaskFormSchema.shape) => {
+    if (error() && error().formErrors.fieldErrors[name]) {
+      return error().formErrors.fieldErrors[name];
+    }
+    return null;
+  };
   const [formState, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
     const session = await getSession(request, authOpts);
     if (!session) {
@@ -58,42 +64,52 @@ export const { routeData, Page } = Protected((_) => {
         <label class="flex flex-col gap-0.5">
           <span class="text-sm font-medium">Title</span>
           <Input name="title" disabled={formState.pending} type="text" placeholder="Title" autofocus />
+          <Show when={getError("title") && getError("title")}>
+            {(e) => <span class="text-xs text-red-500">{e()}</span>}
+          </Show>
         </label>
         <label class="flex flex-col gap-0.5">
           <span class="text-sm font-medium">Description</span>
           <Input disabled={formState.pending} name="description" type="text" placeholder="Description" />
+          <Show when={getError("description") && getError("description")}>
+            {(e) => <span class="text-xs text-red-500">{e()}</span>}
+          </Show>
         </label>
         <label class="flex flex-col gap-0.5">
           <span class="text-sm font-medium">Due Date</span>
           <Input disabled={formState.pending} name="dueDate" type="date" placeholder="Due Date" />
+          <Show when={getError("dueDate") && getError("dueDate")}>
+            {(e) => <span class="text-xs text-red-500">{e()}</span>}
+          </Show>
         </label>
-        <Select<TaskPriority>
-          name="priority"
-          disabled={formState.pending}
-          options={task_priority.enumValues}
-          placeholder="Select a priority…"
-          defaultValue={task_priority.enumValues[0]}
-        >
-          Priority
-        </Select>
-        <Select<TaskStatus>
-          name="status"
-          options={task_status.enumValues}
-          disabled={formState.pending}
-          placeholder="Select a status"
-          defaultValue={task_status.enumValues[0]}
-        >
-          Status
-        </Select>
-        <Show when={error()}>
-          {(e) => (
-            <>
-              <For each={Object.keys(e().flatten().fieldErrors) as (keyof z.infer<typeof TaskFormSchema>)[]}>
-                {(key) => <span class="text-xs text-red-500">{e().formErrors.fieldErrors[key]}</span>}
-              </For>
-            </>
-          )}
-        </Show>
+        <div class="flex flex-col gap-0.5">
+          <Select<TaskPriority>
+            name="priority"
+            disabled={formState.pending}
+            options={task_priority.enumValues}
+            placeholder="Select a priority…"
+            defaultValue={task_priority.enumValues[0]}
+          >
+            Priority
+          </Select>
+          <Show when={getError("priority") && getError("priority")}>
+            {(e) => <span class="text-xs text-red-500">{e()}</span>}
+          </Show>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <Select<TaskStatus>
+            name="status"
+            options={task_status.enumValues}
+            disabled={formState.pending}
+            placeholder="Select a status"
+            defaultValue={task_status.enumValues[0]}
+          >
+            Status
+          </Select>
+          <Show when={getError("status") && getError("status")}>
+            {(e) => <span class="text-xs text-red-500">{e()}</span>}
+          </Show>
+        </div>
       </div>
       <div class="flex w-full justify-between gap-2">
         <div class="flex w-full"></div>
@@ -110,7 +126,7 @@ export const { routeData, Page } = Protected((_) => {
               if (!validated.success) {
                 setError(validated.error);
               } else {
-                formRef?.submit();
+                formRef.submit();
               }
             }}
           >

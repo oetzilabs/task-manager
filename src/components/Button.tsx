@@ -43,7 +43,15 @@ const Secondary = (props: ButtonProps) => {
 };
 
 const Tertiary = (props: ButtonProps) => {
-  return <DefaultButton {...props} class={classNames("bg-transparent hover:bg-neutral-100 text-black", props.class)} />;
+  return (
+    <DefaultButton
+      {...props}
+      class={classNames(
+        "bg-transparent hover:bg-black/[0.05] text-black dark:text-white dark:hover:bg-white/[0.05]",
+        props.class
+      )}
+    />
+  );
 };
 
 export const Button = {
