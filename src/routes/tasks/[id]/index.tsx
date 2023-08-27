@@ -28,7 +28,7 @@ export const Page = () => {
 
   return (
     <div class="w-full flex flex-col gap-2 p-4">
-      <Show when={!task.loading && task()}>{(t) => <Task task={t()} withDelete={true} withEdit={true} />}</Show>
+      <Show when={!task.loading && task()}>{(t) => <Task task={t()} />}</Show>
     </div>
   );
 };
