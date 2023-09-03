@@ -34,6 +34,7 @@
     "pg": "^8.11.3",
     "solid-js": "^1.7.11",
     "solid-start": "^0.3.4",
+    "tailwind-merge": "^1.14.0",
     "zod": "^3.22.2"
   },
   "engines": {

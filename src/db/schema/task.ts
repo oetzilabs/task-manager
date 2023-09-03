@@ -1,6 +1,7 @@
 import { InferSelectModel, relations } from "drizzle-orm";
 import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users_to_tasks } from "./users_to_tasks";
+import { requirements } from "./requirement";
 
 export const task_status = pgEnum("task_status", ["incomplete", "in progress", "complete", "archived", "on hold"]);
 export type TaskStatus = (typeof task_status.enumValues)[number];
@@ -25,6 +26,7 @@ export const tasks = pgTable("task", {
 
 export const task_relations = relations(tasks, ({ many, one }) => ({
   users_to_tasks: many(users_to_tasks),
+  tasks_to_requirements: many(requirements),
 }));
 
 export type TaskSelect = InferSelectModel<typeof tasks>;

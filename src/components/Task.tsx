@@ -3,17 +3,18 @@ import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import { eq } from "drizzle-orm";
 import { Show } from "solid-js";
-import { A } from "solid-start";
+import { A, useLocation } from "solid-start";
 import { createServerAction$ } from "solid-start/server";
 import { CopyPlus } from "~/components/icons/copy-plus";
 import { PenLine } from "~/components/icons/penline";
 import { Trash } from "~/components/icons/trash";
-import { PriorityColors } from "~/utils/colors";
+import { TaskPriorityColors } from "~/utils/colors";
 import { db } from "../db";
 import { TaskSelect, tasks, users_to_tasks } from "../db/schema";
 import { authOpts } from "../routes/api/auth/[...solidauth]";
 import { Button } from "./Button";
 import { Calendar } from "./icons/calendar";
+import { classNames } from "../utils/css";
 dayjs.extend(advancedFormat);
 
 interface TaskProps {
@@ -60,9 +61,35 @@ export const Task = (props: TaskProps) => {
       return newTask;
     },
     {
-      invalidate: () => ["tasks"],
+      invalidate: () => ["tasks", "task", props.task.id],
     }
   );
+
+  const urlPath = useLocation().pathname;
+  const hasId = urlPath.includes(props.task.id);
+
+  const TaskTitle = () => {
+    // if the url has the id, then we render the title as a h2,
+    // otherwise we render it as a link
+    const x = (
+      <h2
+        class={classNames(
+          "text-xl font-bold",
+          !hasId && "hover:underline underline-offset-2 cursor-pointer",
+          hasId && "cursor-default select-none"
+        )}
+      >
+        {props.task.title}
+      </h2>
+    );
+
+    if (hasId) {
+      return x;
+    }
+
+    return <A href={`/tasks/${props.task.id}`}>{x}</A>;
+  };
+
   const [deletionState, deleteTask] = createServerAction$(
     async (id: string, { request }) => {
       const session = await getSession(request, authOpts);
@@ -119,13 +146,13 @@ export const Task = (props: TaskProps) => {
                   <div
                     class="w-3 h-3 rounded-full"
                     style={{
-                      ["background-color"]: PriorityColors[props.task.priority],
+                      ["background-color"]: TaskPriorityColors[props.task.priority],
                     }}
                   />
                   <div
                     class="text-sm"
                     style={{
-                      color: PriorityColors[props.task.priority],
+                      color: TaskPriorityColors[props.task.priority],
                     }}
                   >
                     {props.task.priority}
@@ -166,11 +193,9 @@ export const Task = (props: TaskProps) => {
             </div>
           </div>
           <div class="flex flex-row gap-1 dark:text-white">
-            <A href={`/tasks/${props.task.id}`}>
-              <h2 class="text-xl font-bold hover:underline underline-offset-2">{props.task.title}</h2>
-            </A>
+            <TaskTitle />
           </div>
-          <div class="text-sm">{props.task.description}</div>
+          <div class="text-sm dark:text-white">{props.task.description}</div>
         </div>
       </div>
     </div>

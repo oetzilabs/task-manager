@@ -31,3 +31,9 @@ export const EditTaskFormSchema = z
     id: z.string().uuid(),
   })
   .merge(TaskFormSchema);
+
+export const EditTaskRequirementFormSchema = z
+  .object({
+    id: z.string().uuid(),
+  })
+  .merge(TaskRequirementFormSchema);

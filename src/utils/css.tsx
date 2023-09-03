@@ -1,1 +1,4 @@
-export const classNames = (...classes: (undefined | boolean | string)[]) => classes.filter(Boolean).join(" ");
+import { twMerge } from "tailwind-merge";
+import type { ClassNameValue } from "tailwind-merge";
+
+export const classNames = (...classes: ClassNameValue[]) => twMerge(classes);
