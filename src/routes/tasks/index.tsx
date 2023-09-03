@@ -109,21 +109,21 @@ export const TaskList = () => {
       </Show>
       <Show when={!tasks.error && tasks()}>
         {(ts) => (
-          <>
-            <Show when={ts().length === 0}>
-              <div class="border dark:border-neutral-900 w-full p-14 flex flex-col items-center justify-center gap-4 bg-neutral-100 dark:bg-neutral-950 rounded-sm">
-                <span class="text-neutral-500">No tasks have been found</span>
-                <A href="/tasks/new">
-                  <Button.Primary>Create a new task</Button.Primary>
-                </A>
-              </div>
-            </Show>
-            <div class={classNames("w-full gap-2", layoutCss[layout()])}>
-              <Show when={ts().length > 0}>
-                <For each={ts()}>{(task) => <Task task={task} />}</For>
-              </Show>
-            </div>
-          </>
+          <div class={classNames("w-full gap-2", layoutCss[layout()])}>
+            <For
+              each={ts()}
+              fallback={
+                <div class="border dark:border-neutral-900 w-full p-14 flex flex-col items-center justify-center gap-4 bg-neutral-100 dark:bg-neutral-950 rounded-sm">
+                  <span class="text-neutral-500">No tasks have been found</span>
+                  <A href="/tasks/new">
+                    <Button.Primary>Create a new task</Button.Primary>
+                  </A>
+                </div>
+              }
+            >
+              {(task) => <Task task={task} />}
+            </For>
+          </div>
         )}
       </Show>
     </div>

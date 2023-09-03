@@ -3,7 +3,7 @@ import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import { eq } from "drizzle-orm";
 import { Show } from "solid-js";
-import { A } from "solid-start";
+import { A, useLocation } from "solid-start";
 import { createServerAction$, redirect } from "solid-start/server";
 import { CopyPlus } from "~/components/icons/copy-plus";
 import { PenLine } from "~/components/icons/penline";
@@ -14,6 +14,7 @@ import { RequirementSelect, requirements } from "../db/schema";
 import { authOpts } from "../routes/api/auth/[...solidauth]";
 import { Button } from "./Button";
 import { Calendar } from "./icons/calendar";
+import { classNames } from "../utils/css";
 dayjs.extend(advancedFormat);
 
 interface RequirementProps {
@@ -57,6 +58,31 @@ export const Requirement = (props: RequirementProps) => {
       invalidate: () => ["tasks", "task", props.requirement.taskId],
     }
   );
+
+  const urlPath = useLocation().pathname;
+  const hasId = urlPath.includes(props.requirement.id);
+
+  const TaskTitle = () => {
+    // if the url has the id, then we render the title as a h2,
+    // otherwise we render it as a link
+    const x = (
+      <h2
+        class={classNames(
+          "text-xl font-bold",
+          !hasId && "hover:underline underline-offset-2 cursor-pointer",
+          hasId && "cursor-default select-none"
+        )}
+      >
+        {props.requirement.title}
+      </h2>
+    );
+
+    if (hasId) {
+      return x;
+    }
+
+    return <A href={`/tasks/${props.requirement.taskId}/rq/${props.requirement.id}`}>{x}</A>;
+  };
   return (
     <div class="w-full p-4 border border-neutral-200 bg-neutral-50 rounded-sm dark:border-neutral-900 dark:bg-neutral-950">
       <div class="w-full flex flex-col">
@@ -117,9 +143,7 @@ export const Requirement = (props: RequirementProps) => {
             </div>
           </div>
           <div class="flex flex-row gap-1 dark:text-white">
-            <A href={`/tasks/${props.requirement.taskId}/${props.requirement.id}`}>
-              <h2 class="text-xl font-bold hover:underline underline-offset-2">{props.requirement.title}</h2>
-            </A>
+            <TaskTitle />
           </div>
           <div class="text-sm dark:text-white">{props.requirement.description}</div>
         </div>
