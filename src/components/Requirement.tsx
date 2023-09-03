@@ -5,16 +5,15 @@ import { eq } from "drizzle-orm";
 import { Show } from "solid-js";
 import { A, useLocation } from "solid-start";
 import { createServerAction$, redirect } from "solid-start/server";
-import { CopyPlus } from "~/components/icons/copy-plus";
 import { PenLine } from "~/components/icons/penline";
 import { Trash } from "~/components/icons/trash";
 import { RequirementPriorityColors } from "~/utils/colors";
 import { db } from "../db";
 import { RequirementSelect, requirements } from "../db/schema";
 import { authOpts } from "../routes/api/auth/[...solidauth]";
+import { classNames } from "../utils/css";
 import { Button } from "./Button";
 import { Calendar } from "./icons/calendar";
-import { classNames } from "../utils/css";
 dayjs.extend(advancedFormat);
 
 interface RequirementProps {

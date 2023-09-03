@@ -1,14 +1,13 @@
 import { getSession } from "@auth/solid-start";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
-import { For, Show } from "solid-js";
+import { Show } from "solid-js";
 import { RouteDataFuncArgs, useRouteData } from "solid-start";
 import { createServerAction$, createServerData$ } from "solid-start/server";
 import { Requirement } from "~/components/Requirement";
-import { Task } from "~/components/Task";
 import { db } from "~/db";
-import { authOpts } from "../../../../api/auth/[...solidauth]";
 import { requirements } from "../../../../../db/schema";
+import { authOpts } from "../../../../api/auth/[...solidauth]";
 dayjs.extend(advancedFormat);
 
 // taks id page, solid js need routeData
