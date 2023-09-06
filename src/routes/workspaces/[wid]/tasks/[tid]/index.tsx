@@ -1,26 +1,28 @@
 import { getSession } from "@auth/solid-start";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
+import { isNull } from "drizzle-orm";
 import { For, Show } from "solid-js";
 import { RouteDataFuncArgs, useRouteData } from "solid-start";
 import { createServerAction$, createServerData$ } from "solid-start/server";
 import { Requirement } from "~/components/Requirement";
 import { Task } from "~/components/Task";
 import { db } from "~/db";
-import { authOpts } from "../../api/auth/[...solidauth]";
-import { requirements } from "../../../db/schema";
-import { isNull } from "drizzle-orm";
+import { requirements } from "~/db/schema";
+import { authOpts } from "../../../../api/auth/[...solidauth]";
 dayjs.extend(advancedFormat);
 
-// taks id page, solid js need routeData
 export const routeData = ({ params }: RouteDataFuncArgs) => {
   const task = createServerData$(
     async (p: string[]) => {
-      const [x, y, id] = p;
+      const [_, __, wid, ___, ____, id] = p;
       const task = await db.query.tasks.findFirst({
         with: {
           tasks_to_requirements: {
             where: (fields, operators) => isNull(fields.removedAt),
+            with: {
+              task: true,
+            },
           },
         },
         where(fields, operators) {
@@ -29,7 +31,7 @@ export const routeData = ({ params }: RouteDataFuncArgs) => {
       });
       return task;
     },
-    { key: () => ["tasks", "task", params.id] }
+    { key: () => ["workspaces", "workspace", params.wid, "tasks", "task", params.tid] }
   );
   return task;
 };
@@ -75,7 +77,7 @@ export const Page = () => {
       }
     },
     {
-      invalidate: () => ["tasks", "task", task()?.id ?? ""],
+      invalidate: () => ["workspaces", "workspace", task()?.workspace_id, "tasks", "task", task()?.id],
     }
   );
 
@@ -84,7 +86,13 @@ export const Page = () => {
       <Show when={task()}>
         {(t) => (
           <div class="flex flex-col gap-4">
+            <div>
+              <span class="text-3xl dark:text-white font-semibold">Task</span>
+            </div>
             <Task task={t()} />
+            <div>
+              <span class="text-3xl dark:text-white font-semibold">Requirements</span>
+            </div>
             <For
               fallback={
                 <div class="w-full bg-black/[0.02] dark:bg-white/[0.05] dark:text-white/50 py-20 flex flex-col items-center justify-center gap-4">
@@ -103,7 +111,7 @@ export const Page = () => {
               }
               each={t().tasks_to_requirements}
             >
-              {(r) => <Requirement requirement={r} />}
+              {(r) => <Requirement requirement={r} wid={task()?.workspace_id ?? ""} />}
             </For>
           </div>
         )}

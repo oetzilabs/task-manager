@@ -46,7 +46,7 @@ export const Header = () => {
       <div class="flex gap-4 pl-4 dark:text-white">
         <A href="/">Home</A>
         <Show when={!loading && state === "ready" && latest !== null}>
-          <A href="/tasks">Tasks</A>
+          <A href="/workspaces">Workspaces</A>
         </Show>
       </div>
       <div class="flex gap-4 p-2">

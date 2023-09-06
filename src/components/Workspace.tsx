@@ -10,19 +10,19 @@ import { PenLine } from "~/components/icons/penline";
 import { Trash } from "~/components/icons/trash";
 import { TaskPriorityColors } from "~/utils/colors";
 import { db } from "../db";
-import { TaskSelect, tasks, users_to_tasks } from "../db/schema";
+import { TaskSelect, WorkspaceSelect, tasks, users_to_tasks, workspaces } from "../db/schema";
 import { authOpts } from "../routes/api/auth/[...solidauth]";
 import { Button } from "./Button";
 import { Calendar } from "./icons/calendar";
 import { classNames } from "../utils/css";
 dayjs.extend(advancedFormat);
 
-interface TaskProps {
-  task: TaskSelect;
+interface WorkspaceProps {
+  ws: WorkspaceSelect;
 }
 
-export const Task = (props: TaskProps) => {
-  const [duplicationState, duplicateTask] = createServerAction$(
+export const Workspace = (props: WorkspaceProps) => {
+  const [duplicationState, duplicateWorkspace] = createServerAction$(
     async (id: string, { request }) => {
       const session = await getSession(request, authOpts);
       if (!session) {
@@ -36,40 +36,36 @@ export const Task = (props: TaskProps) => {
       if (!user) {
         throw new Error("User not found");
       }
-      const task = await db.query.tasks.findFirst({
+      const ws = await db.query.workspaces.findFirst({
         where(fields, operators) {
           return operators.eq(fields.id, id);
         },
       });
-      if (!task) {
-        throw new Error("Task not found");
+      if (!ws) {
+        throw new Error("Workspace not found");
       }
-      const [newTask] = await db
-        .insert(tasks)
+
+      const [newWorkspace] = await db
+        .insert(workspaces)
         .values({
-          title: task.title,
-          description: task.description,
-          dueDate: task.dueDate,
-          priority: task.priority,
-          status: task.status,
-          workspace_id: task.workspace_id,
+          name: ws.name,
         })
         .returning();
-      if (!newTask) {
+      if (!newWorkspace) {
         throw new Error("Some error occured");
       }
-      await db.insert(users_to_tasks).values({ user_id: user.id, task_id: newTask.id }).returning();
-      return newTask;
+      await db.insert(users_to_tasks).values({ user_id: user.id, task_id: newWorkspace.id }).returning();
+      return newWorkspace;
     },
     {
-      invalidate: () => ["workspaces", "workspace", props.task.workspace_id],
+      invalidate: () => ["workspaces", "workspace", props.ws.id],
     }
   );
 
   const urlPath = useLocation().pathname;
-  const hasId = urlPath.includes(props.task.id);
+  const hasId = urlPath.includes(props.ws.id);
 
-  const TaskTitle = () => {
+  const WorkspaceTitle = () => {
     const x = (
       <h2
         class={classNames(
@@ -78,7 +74,7 @@ export const Task = (props: TaskProps) => {
           hasId && "cursor-default select-none"
         )}
       >
-        {props.task.title}
+        {props.ws.name}
       </h2>
     );
 
@@ -86,11 +82,11 @@ export const Task = (props: TaskProps) => {
       return x;
     }
 
-    return <A href={`/workspaces/${props.task.workspace_id}/tasks/${props.task.id}`}>{x}</A>;
+    return <A href={props.ws.id}>{x}</A>;
   };
 
-  const [deletionState, deleteTask] = createServerAction$(
-    async ([url, id]: string[], { request, locals }) => {
+  const [deletionState, deleteWorkspace] = createServerAction$(
+    async ([url, id]: string[], { request }) => {
       const session = await getSession(request, authOpts);
       if (!session) {
         throw new Error("Session not found");
@@ -103,87 +99,64 @@ export const Task = (props: TaskProps) => {
       if (!user) {
         throw new Error("User not found");
       }
-      const task = await db.query.tasks.findFirst({
+      const ws = await db.query.workspaces.findFirst({
         where(fields, operators) {
           return operators.eq(fields.id, id);
         },
       });
-      if (!task) {
-        throw new Error("Task not found");
+      if (!ws) {
+        throw new Error("Workspace not found");
       }
-      const [t] = await db
-        .update(tasks)
+      const [w] = await db
+        .update(workspaces)
         .set({
           updatedAt: new Date(),
           removedAt: new Date(),
         })
-        .where(eq(tasks.id, task.id))
+        .where(eq(workspaces.id, ws.id))
         .returning();
-      if (url.includes(task.id)) return redirect(`/workspaces/${task.workspace_id}`);
-      return t;
+      if (!w) {
+        throw new Error("Some error occured");
+      }
+      if (url.includes(w.id)) return redirect(`/workspaces`);
+      return w;
     },
     {
-      invalidate: ["workspaces", "workspace", props.task.workspace_id],
+      invalidate: () => ["workspaces", "workspace", props.ws.id],
     }
   );
-
   return (
     <div class="w-full p-4 border border-neutral-200 bg-neutral-50 rounded-sm dark:border-neutral-900 dark:bg-neutral-950">
       <div class="w-full flex flex-col">
         <div class="w-full flex flex-col gap-2">
           <div class="w-full flex flex-row gap-2 justify-between">
             <div class="flex flex-1 flex-row gap-2 items-center">
-              <div class="relative w-max flex flex-col gap-2">
-                <div class="flex flex-row gap-2 items-center">
-                  <div class="flex flex-row gap-1 items-center select-none">
-                    <div class="text-xs text-neutral-400">
-                      <Calendar size={14} />
-                    </div>
-                    <div class="text-xs text-neutral-400">Due</div>
-                    <div class="text-xs text-neutral-400">{dayjs(props.task.dueDate).format("Do MMMM YYYY")}</div>
-                  </div>
-                </div>
-                <div class="w-max flex flex-row gap-2 items-center select-none">
-                  <div
-                    class="w-3 h-3 rounded-full"
-                    style={{
-                      ["background-color"]: TaskPriorityColors[props.task.priority],
-                    }}
-                  />
-                  <div
-                    class="text-sm"
-                    style={{
-                      color: TaskPriorityColors[props.task.priority],
-                    }}
-                  >
-                    {props.task.priority}
-                  </div>
-                  <div class="text-xs text-neutral-400">{props.task.status}</div>
-                </div>
+              <div class="flex flex-row gap-1 dark:text-white">
+                <WorkspaceTitle />
               </div>
             </div>
             <div class="flex flex-row gap-1 h-min">
               <Button.Tertiary
                 disabled={duplicationState.pending}
                 onClick={() => {
-                  duplicateTask(props.task.id);
+                  duplicateWorkspace(props.ws.id);
                 }}
                 class="border-none !p-2"
               >
                 <CopyPlus size={16} />
                 <span class="sr-only">Duplicate</span>
               </Button.Tertiary>
-              <A href={`/workspaces/${props.task.workspace_id}/tasks/${props.task.id}/edit`}>
+              <A href={`${hasId ? "" : `/workspaces/${props.ws.id}/`}edit`}>
                 <Button.Tertiary class="border-none !p-2">
                   <PenLine size={16} />
                   <span class="sr-only">Edit</span>
                 </Button.Tertiary>
               </A>
-              <Show when={props.task.removedAt === null}>
+              <Show when={props.ws.removedAt === null}>
                 <Button.Tertiary
                   disabled={deletionState.pending}
                   onClick={() => {
-                    deleteTask([urlPath, props.task.id]);
+                    deleteWorkspace([urlPath, props.ws.id]);
                   }}
                   class="border-none !p-2 !text-red-500 hover:!text-red-600 hover:!bg-red-100 dark:hover:!bg-red-900 dark:hover:!text-white"
                 >
@@ -193,10 +166,6 @@ export const Task = (props: TaskProps) => {
               </Show>
             </div>
           </div>
-          <div class="flex flex-row gap-1 dark:text-white">
-            <TaskTitle />
-          </div>
-          <div class="text-sm dark:text-white">{props.task.description}</div>
         </div>
       </div>
     </div>

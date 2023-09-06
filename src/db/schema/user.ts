@@ -1,6 +1,6 @@
-import { timestamp, pgTable, text, primaryKey, integer } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "@auth/core/adapters";
 import { relations } from "drizzle-orm";
+import { integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 import { users_to_tasks } from "./users_to_tasks";
 
 export const users = pgTable("user", {
@@ -10,6 +10,9 @@ export const users = pgTable("user", {
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
 });
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
 
 export const accounts = pgTable(
   "account",
@@ -33,6 +36,9 @@ export const accounts = pgTable(
   })
 );
 
+export type Account = typeof accounts.$inferSelect;
+export type NewAccount = typeof accounts.$inferInsert;
+
 export const sessions = pgTable("session", {
   sessionToken: text("sessionToken").notNull().primaryKey(),
   userId: text("userId")
@@ -40,6 +46,9 @@ export const sessions = pgTable("session", {
     .references(() => users.id, { onDelete: "cascade" }),
   expires: timestamp("expires", { mode: "date" }).notNull(),
 });
+
+export type Session = typeof sessions.$inferSelect;
+export type NewSession = typeof sessions.$inferInsert;
 
 export const verificationTokens = pgTable(
   "verificationToken",
@@ -52,6 +61,9 @@ export const verificationTokens = pgTable(
     compoundKey: primaryKey(vt.identifier, vt.token),
   })
 );
+
+export type VerificationToken = typeof verificationTokens.$inferSelect;
+export type NewVerificationToken = typeof verificationTokens.$inferInsert;
 
 export const users_relations = relations(users, ({ many, one }) => ({
   users_to_tasks: many(users_to_tasks),

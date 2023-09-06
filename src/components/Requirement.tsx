@@ -9,7 +9,7 @@ import { PenLine } from "~/components/icons/penline";
 import { Trash } from "~/components/icons/trash";
 import { RequirementPriorityColors } from "~/utils/colors";
 import { db } from "../db";
-import { RequirementSelect, requirements } from "../db/schema";
+import { RequirementSelect, TaskSelect, requirements } from "../db/schema";
 import { authOpts } from "../routes/api/auth/[...solidauth]";
 import { classNames } from "../utils/css";
 import { Button } from "./Button";
@@ -17,12 +17,15 @@ import { Calendar } from "./icons/calendar";
 dayjs.extend(advancedFormat);
 
 interface RequirementProps {
-  requirement: RequirementSelect;
+  requirement: RequirementSelect & {
+    task: TaskSelect;
+  };
+  wid: string;
 }
 
 export const Requirement = (props: RequirementProps) => {
   const [deletionState, deleteRequirement] = createServerAction$(
-    async (id: string, { request }) => {
+    async ([url, id]: string[], { request }) => {
       const session = await getSession(request, authOpts);
       if (!session) {
         throw new Error("Session not found");
@@ -35,12 +38,13 @@ export const Requirement = (props: RequirementProps) => {
       if (!user) {
         throw new Error("User not found");
       }
-      const task = await db.query.requirements.findFirst({
+      const req = await db.query.requirements.findFirst({
         where(fields, operators) {
           return operators.eq(fields.id, id);
         },
+        with: { task: true },
       });
-      if (!task) {
+      if (!req) {
         throw new Error("Task not found");
       }
       const [t] = await db
@@ -49,21 +53,26 @@ export const Requirement = (props: RequirementProps) => {
           updatedAt: new Date(),
           removedAt: new Date(),
         })
-        .where(eq(requirements.id, task.id))
+        .where(eq(requirements.id, req.id))
         .returning();
-      return redirect(`/tasks/${t.taskId}`);
+      if (!t) {
+        throw new Error("Some error occured");
+      }
+      if (url.includes(req.id)) {
+        return redirect(`/workspaces/${req.task.workspace_id}/tasks/${t.taskId}`);
+      } else {
+        return t;
+      }
     },
     {
-      invalidate: () => ["tasks", "task", props.requirement.taskId],
+      invalidate: () => ["workspaces", "workspace", props.wid, "tasks", "task", props.requirement.taskId],
     }
   );
 
   const urlPath = useLocation().pathname;
   const hasId = urlPath.includes(props.requirement.id);
 
-  const TaskTitle = () => {
-    // if the url has the id, then we render the title as a h2,
-    // otherwise we render it as a link
+  const ReqTitle = () => {
     const x = (
       <h2
         class={classNames(
@@ -80,7 +89,13 @@ export const Requirement = (props: RequirementProps) => {
       return x;
     }
 
-    return <A href={`/tasks/${props.requirement.taskId}/rq/${props.requirement.id}`}>{x}</A>;
+    return (
+      <A
+        href={`/workspaces/${props.requirement.task.workspace_id}/tasks/${props.requirement.taskId}/rq/${props.requirement.id}`}
+      >
+        {x}
+      </A>
+    );
   };
   return (
     <div class="w-full p-4 border border-neutral-200 bg-neutral-50 rounded-sm dark:border-neutral-900 dark:bg-neutral-950">
@@ -120,7 +135,9 @@ export const Requirement = (props: RequirementProps) => {
               </div>
             </div>
             <div class="flex flex-row gap-1 h-min">
-              <A href={`/tasks/${props.requirement.taskId}/rq/${props.requirement.id}/edit`}>
+              <A
+                href={`/workspaces/${props.requirement.task.workspace_id}/tasks/${props.requirement.task.id}/rq/${props.requirement.id}/edit`}
+              >
                 <Button.Tertiary class="border-none !p-2">
                   <PenLine size={16} />
                   <span class="sr-only">Edit</span>
@@ -131,7 +148,7 @@ export const Requirement = (props: RequirementProps) => {
                   title={`Delete ${props.requirement.id}`}
                   disabled={deletionState.pending}
                   onClick={() => {
-                    deleteRequirement(props.requirement.id);
+                    deleteRequirement([urlPath, props.requirement.id]);
                   }}
                   class="border-none !p-2 !text-red-500 hover:!text-red-600 hover:!bg-red-100 dark:hover:!bg-red-900 dark:hover:!text-white"
                 >
@@ -142,7 +159,7 @@ export const Requirement = (props: RequirementProps) => {
             </div>
           </div>
           <div class="flex flex-row gap-1 dark:text-white">
-            <TaskTitle />
+            <ReqTitle />
           </div>
           <div class="text-sm dark:text-white">{props.requirement.description}</div>
         </div>

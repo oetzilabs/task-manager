@@ -6,11 +6,10 @@ import { RouteDataFuncArgs, useRouteData } from "solid-start";
 import { createServerAction$, createServerData$ } from "solid-start/server";
 import { Requirement } from "~/components/Requirement";
 import { db } from "~/db";
-import { requirements } from "../../../../../db/schema";
-import { authOpts } from "../../../../api/auth/[...solidauth]";
+import { requirements } from "../../../../../../../db/schema";
+import { authOpts } from "../../../../../../api/auth/[...solidauth]";
 dayjs.extend(advancedFormat);
 
-// taks id page, solid js need routeData
 export const routeData = ({ params }: RouteDataFuncArgs) => {
   const task = createServerData$(
     async (id: string) => {
@@ -75,7 +74,7 @@ export const Page = () => {
       <Show when={rq()}>
         {(r) => (
           <div class="flex flex-col gap-4">
-            <Requirement requirement={r()} />
+            <Requirement requirement={r()} wid={r().task.workspace_id ?? ""} />
           </div>
         )}
       </Show>

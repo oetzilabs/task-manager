@@ -22,6 +22,27 @@
       "when": 1693139004472,
       "tag": "0002_rare_slapstick",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1693981290157,
+      "tag": "0003_bouncy_vertigo",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1693982907284,
+      "tag": "0004_lush_proudstar",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1693989681870,
+      "tag": "0005_aromatic_hawkeye",
+      "breakpoints": true
     }
   ]
 }

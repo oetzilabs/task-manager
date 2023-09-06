@@ -3,20 +3,20 @@ import { A } from "@solidjs/router";
 import dayjs from "dayjs";
 import advancedFormat from "dayjs/plugin/advancedFormat";
 import { For, JSX, Show, createSignal } from "solid-js";
-import { useRouteData } from "solid-start";
+import { RouteDataArgs, useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
+import { Button } from "~/components/Button";
 import { LayoutGrid } from "~/components/icons/layout-grid";
 import { Plus } from "~/components/icons/plus";
 import { Rows } from "~/components/icons/rows";
 import { db } from "~/db";
-import { Button } from "../../components/Button";
-import { Task } from "../../components/Task";
 import { authOpts } from "../api/auth/[...solidauth]";
+import { Workspace } from "../../components/Workspace";
 dayjs.extend(advancedFormat);
 
-export function routeData() {
-  const tasks = createServerData$(
-    async (_, { request }) => {
+export function routeData({ params }: RouteDataArgs) {
+  const ws = createServerData$(
+    async ([_, wid], { request }) => {
       const session = await getSession(request, authOpts);
       if (!session) {
         return [];
@@ -37,23 +37,27 @@ export function routeData() {
       if (!user) {
         return [];
       }
-      const user_has_tasks = await db.query.users_to_tasks.findMany({
+      const user_has_workspaces = await db.query.users_to_workspaces.findMany({
         with: {
           user: true,
-          task: true,
+          workspace: {
+            with: {
+              tasks: true,
+            },
+          },
         },
-        where(fields, operators) {
-          return operators.eq(fields.user_id, user.id);
+        where(fields, op) {
+          return op.eq(fields.user_id, user.id);
         },
       });
-      return user_has_tasks.map((uht) => uht.task).filter((t) => t.removedAt === null);
+      return user_has_workspaces.map((uhw) => uhw.workspace).filter((t) => t.removedAt === null);
     },
     {
-      key: () => ["tasks"],
+      key: () => ["workspaces", params.wid],
     }
   );
 
-  return tasks;
+  return ws;
 }
 
 const classNames = (...classes: (string | boolean)[]) => classes.filter(Boolean).join(" ");
@@ -70,17 +74,17 @@ const layoutIcon: Record<Layout, JSX.Element> = {
   list: <Rows size={16} />,
 };
 
-export const TaskList = () => {
-  const tasks = useRouteData<typeof routeData>();
+export const WorkspaceList = () => {
+  const ws = useRouteData<typeof routeData>();
   const [layout, setLayout] = createSignal<Layout>("grid");
   return (
     <div class="w-full flex flex-col gap-2 py-4">
       <div class="w-full flex flex-row justify-between border-b dark:border-b-neutral-900 pb-2 text-black dark:text-white">
         <div class="flex flex-1 gap-2">
-          <h1 class="text-2xl font-bold">Tasks</h1>
+          <h1 class="text-2xl font-bold">Workspaces</h1>
         </div>
         <div class="flex flex-row gap-2 w-content">
-          <Show when={!tasks.loading && (tasks() ?? []).length > 0}>
+          <Show when={!ws.loading && (ws() ?? []).length > 0}>
             <Button.Secondary class="border dark:border-neutral-900 w-max outline-none cursor-pointer hover:bg-neutral-100 py-1 px-2 rounded-sm">
               <div
                 class="flex flex-row gap-2 justify-between items-center"
@@ -93,35 +97,35 @@ export const TaskList = () => {
               </div>
             </Button.Secondary>
           </Show>
-          <A href="/tasks/new">
+          <A href="new">
             <Button.Primary>
               <Plus size={16} />
-              <span>New Task</span>
+              <span>New Workspace</span>
             </Button.Primary>
           </A>
         </div>
       </div>
-      <Show when={tasks.loading}>
+      <Show when={ws.loading}>
         <div class="">Loading...</div>
       </Show>
-      <Show when={tasks.error}>
-        <div class="text-red-500">Error: {tasks.error?.message ?? "Some error occured"}</div>
+      <Show when={ws.error}>
+        <div class="text-red-500">Error: {ws.error?.message ?? "Some error occured"}</div>
       </Show>
-      <Show when={!tasks.error && tasks()}>
-        {(ts) => (
-          <div class={classNames("w-full gap-2", layoutCss[layout()])}>
+      <Show when={!ws.error && ws()}>
+        {(w) => (
+          <div class={classNames("w-full gap-2", w().length > 0 ? layoutCss[layout()] : "flex flex-col")}>
             <For
-              each={ts()}
+              each={w()}
               fallback={
                 <div class="border dark:border-neutral-900 w-full p-14 flex flex-col items-center justify-center gap-4 bg-neutral-100 dark:bg-neutral-950 rounded-sm">
-                  <span class="text-neutral-500">No tasks have been found</span>
-                  <A href="/tasks/new">
-                    <Button.Primary>Create a new task</Button.Primary>
+                  <span class="text-neutral-500">No workspaces have been found</span>
+                  <A href="new">
+                    <Button.Primary>Create a new workspace</Button.Primary>
                   </A>
                 </div>
               }
             >
-              {(task) => <Task task={task} />}
+              {(w) => <Workspace ws={w} />}
             </For>
           </div>
         )}
@@ -133,7 +137,7 @@ export const TaskList = () => {
 export const Page = () => {
   return (
     <div class="w-full flex flex-col gap-2 p-4">
-      <TaskList />
+      <WorkspaceList />
     </div>
   );
 };

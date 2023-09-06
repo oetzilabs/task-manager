@@ -1,44 +1,56 @@
 import { getSession } from "@auth/solid-start";
 import dayjs from "dayjs";
+import advancedFormat from "dayjs/plugin/advancedFormat";
 import { eq } from "drizzle-orm";
 import { For, Show, createSignal } from "solid-js";
 import { RouteDataFuncArgs, useRouteData } from "solid-start";
 import { createServerAction$, createServerData$, redirect } from "solid-start/server";
 import { z } from "zod";
+import { Button } from "~/components/Button";
+import { Input } from "~/components/Input";
 import { Select } from "~/components/Select";
 import { db } from "~/db";
-import { task_priority, task_status, tasks } from "~/db/schema";
-import { TaskPriority, TaskStatus } from "~/db/schema/task";
-import { EditTaskFormSchema } from "~/utils/form/schemas";
-import { Input } from "../../../components/Input";
-import { authOpts } from "../../api/auth/[...solidauth]";
-import { Button } from "../../../components/Button";
+import { requirements, requirement_priority, requirement_status } from "~/db/schema";
+import { RequirementPriority, RequirementStatus } from "~/db/schema/requirement";
+import { EditTaskFormSchema, EditTaskRequirementFormSchema } from "~/utils/form/schemas";
+import { authOpts } from "../../../../../../api/auth/[...solidauth]";
+dayjs.extend(advancedFormat);
 
-// taks id page, solid js need routeData
 export const routeData = ({ params }: RouteDataFuncArgs) => {
-  const task = createServerData$(
+  const req = createServerData$(
     async (id: string) => {
-      const task = await db.query.tasks.findFirst({
+      const req_ = await db.query.requirements.findFirst({
+        with: { task: true },
         where(fields, operators) {
           return operators.eq(fields.id, id);
         },
       });
-      return task;
+      return req_;
     },
-    { key: () => params.id }
+    { key: () => params.rid }
   );
-  return task;
+  return req;
 };
 
 export const Page = () => {
   const [error, setError] = createSignal<any | null>(null);
-  const task = useRouteData<typeof routeData>();
+  const rq = useRouteData<typeof routeData>();
   const [formState, { Form }] = createServerAction$(async (formData: FormData, { request }) => {
     const session = await getSession(request, authOpts);
     if (!session) {
       throw new Error("Session not found");
     }
-    const data = EditTaskFormSchema.parse(Object.fromEntries(formData.entries()));
+    const data = EditTaskRequirementFormSchema.parse(Object.fromEntries(formData.entries()));
+    const wid = data.workspaceId;
+    const x = {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      dueDate: data.dueDate,
+      priority: data.priority,
+      status: data.status,
+      updatedAt: new Date(),
+    };
 
     const user = await db.query.users.findFirst({
       where(fields, operators) {
@@ -48,11 +60,10 @@ export const Page = () => {
     if (!user) {
       throw new Error("User not found");
     }
-    const newData = Object.assign(data, { updatedAt: new Date() });
-    const [task] = await db.update(tasks).set(newData).where(eq(tasks.id, data.id)).returning();
+    const [req] = await db.update(requirements).set(x).where(eq(requirements.id, data.id)).returning();
 
-    if (task) {
-      return redirect(`/tasks/${task.id}`);
+    if (req) {
+      return redirect(`/workspaces/${wid}/tasks/${req.taskId}/rq/${req.id}`);
     } else {
       throw new Error("Some error occured");
     }
@@ -60,12 +71,13 @@ export const Page = () => {
 
   let formRef: HTMLFormElement;
   return (
-    <Show when={!task.loading && task()}>
-      {(t) => (
+    <Show when={rq()}>
+      {(r) => (
         <Form class="w-full flex flex-col gap-4 p-4 text-black dark:text-white" ref={formRef!}>
-          <input type="hidden" name="id" value={t().id} />
+          <input type="hidden" name="workspaceId" value={r().task.workspace_id} />
+          <input type="hidden" name="id" value={r().id} />
           <div>
-            <h1 class="text-4xl font-bold">Edit Task</h1>
+            <h1 class="text-4xl font-bold">Edit Requirement</h1>
           </div>
           <div class="flex flex-col border dark:border-neutral-900 p-2 gap-2">
             <label class="flex flex-col gap-0.5">
@@ -76,7 +88,7 @@ export const Page = () => {
                 type="text"
                 placeholder="Title"
                 autofocus
-                value={t().title}
+                value={r().title}
               />
             </label>
             <label class="flex flex-col gap-0.5">
@@ -86,7 +98,7 @@ export const Page = () => {
                 name="description"
                 type="text"
                 placeholder="Description"
-                value={t().description}
+                value={r().description}
               />
             </label>
             <label class="flex flex-col gap-0.5">
@@ -96,24 +108,24 @@ export const Page = () => {
                 name="dueDate"
                 type="date"
                 placeholder="Due Date"
-                value={dayjs(t().dueDate).format("YYYY-MM-DD")}
+                value={dayjs(r().dueDate).format("YYYY-MM-DD")}
               />
             </label>
-            <Select<TaskPriority>
+            <Select<RequirementPriority>
               name="priority"
               disabled={formState.pending}
-              options={task_priority.enumValues}
+              options={requirement_priority.enumValues}
               placeholder="Select a priority…"
-              defaultValue={task_priority.enumValues[0]}
+              defaultValue={requirement_priority.enumValues[0]}
             >
               Priority
             </Select>
-            <Select<TaskStatus>
+            <Select<RequirementStatus>
               name="status"
               disabled={formState.pending}
-              options={task_status.enumValues}
+              options={requirement_status.enumValues}
               placeholder="Select a status"
-              defaultValue={task_status.enumValues[0]}
+              defaultValue={requirement_status.enumValues[0]}
             >
               Status
             </Select>

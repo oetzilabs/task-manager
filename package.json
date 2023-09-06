@@ -3,7 +3,11 @@
   "scripts": {
     "dev": "solid-start dev",
     "build": "solid-start build",
-    "start": "solid-start start"
+    "start": "solid-start start",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:push": "drizzle-kit push:pg",
+    "db": "pnpm run db:generate && pnpm run db:push",
+    "reset": "docker compose down --volumes --remove-orphans && docker compose up -d && sleep 2 && pnpm run db"
   },
   "type": "module",
   "devDependencies": {

@@ -15,6 +15,7 @@ export const TaskRequirementFormSchema = z.object({
 });
 
 export const TaskFormSchema = z.object({
+  workspaceId: z.string().uuid(),
   title: z.string().min(1, "Title must be at least 1 character long"),
   description: z.string().min(1, "Description must be at least 1 character long"),
   dueDate: z
@@ -35,5 +36,16 @@ export const EditTaskFormSchema = z
 export const EditTaskRequirementFormSchema = z
   .object({
     id: z.string().uuid(),
+    workspaceId: z.string().uuid(),
   })
   .merge(TaskRequirementFormSchema);
+
+export const WorkspaceFormSchema = z.object({
+  name: z.string().min(1, "Name must be at least 1 character long"),
+});
+
+export const EditWorkspaceFormSchema = z
+  .object({
+    id: z.string().uuid(),
+  })
+  .merge(WorkspaceFormSchema);

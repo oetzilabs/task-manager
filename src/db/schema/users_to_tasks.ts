@@ -1,7 +1,7 @@
-import { pgTable, primaryKey, uuid, text, timestamp } from "drizzle-orm/pg-core";
-import { users } from "./user";
-import { tasks } from "./task";
 import { relations } from "drizzle-orm";
+import { pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { tasks } from "./task";
+import { users } from "./user";
 
 export const users_to_tasks = pgTable(
   "users_to_tasks",
@@ -19,6 +19,9 @@ export const users_to_tasks = pgTable(
     pk: primaryKey(t.user_id, t.task_id),
   })
 );
+
+export type UsersToTasks = typeof users_to_tasks.$inferSelect;
+export type NewUsersToTasks = typeof users_to_tasks.$inferInsert;
 
 export const usersToTasksRelations = relations(users_to_tasks, ({ one }) => ({
   task: one(tasks, {
